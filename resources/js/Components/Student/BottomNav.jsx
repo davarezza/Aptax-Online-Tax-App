@@ -45,7 +45,7 @@ const links = [
 
 export default function StudentBottomNav({ active = 'home' }) {
     return (
-        <nav className="fixed bottom-0 left-0 right-0 bg-[#F5F0E8] border-t border-[#E0D8C8] flex z-20">
+        <nav className="fixed bottom-0 left-0 right-0 max-w-md w-full mx-auto bg-[#F5F0E8] border-t border-[#E0D8C8] flex z-20">
             {links.map((l) => {
                 const isActive = active === l.key;
                 return (
