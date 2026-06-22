@@ -2,14 +2,12 @@ import { useState } from 'react';
 import AppLayout from '@/Components/AppLayout';
 import StudentHeader from '@/Components/Student/Header';
 import StudentBottomNav from '@/Components/Student/BottomNav';
-// Import komponen modal yang baru saja dipisahkan
 import EvaluationModal from '@/Components/Student/EvaluationModal';
 
 export default function StudentTasks() {
     const [activeTab, setActiveTab] = useState('active');
     const [selectedTask, setSelectedTask] = useState(null);
 
-    // Mock Data
     const activeTasks = [
         {
             id: 1,
@@ -66,13 +64,11 @@ export default function StudentTasks() {
             <StudentHeader notifCount={1} streakDays={3} userName="A" />
 
             <div className="flex-1 flex flex-col bg-[#F8FAFC]">
-                {/* Title Section */}
                 <div className="px-5 pt-4 pb-2 shrink-0">
                     <h2 className="text-xl font-black text-[#0F172A]">My Tasks</h2>
                     <p className="text-xs text-gray-500 mt-0.5">Complete these assignments to earn points and level up your tax knowledge!</p>
                 </div>
 
-                {/* Tab Filter */}
                 <div className="px-4 py-2 shrink-0">
                     <div className="bg-gray-200/70 p-1 rounded-xl flex items-center">
                         <button
@@ -94,10 +90,7 @@ export default function StudentTasks() {
                     </div>
                 </div>
 
-                {/* List Container */}
                 <div className="flex-1 overflow-y-auto px-4 pb-24 pt-2 space-y-3">
-
-                    {/* ── TAB TUGAS AKTIF ── */}
                     {activeTab === 'active' && activeTasks.map((task) => (
                         <div
                             key={task.id}
@@ -137,7 +130,6 @@ export default function StudentTasks() {
                         </div>
                     ))}
 
-                    {/* ── TAB EVALUASI & FEEDBACK ── */}
                     {activeTab === 'evaluation' && completedTasks.map((task) => (
                         <div key={task.id} className="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm flex flex-col justify-between">
                             <div>
@@ -168,7 +160,6 @@ export default function StudentTasks() {
                         </div>
                     ))}
 
-                    {/* Section Label: Completed Recently */}
                     {activeTab === 'active' && (
                         <>
                             <div className="flex items-center my-4 shrink-0">
@@ -194,7 +185,6 @@ export default function StudentTasks() {
 
             <StudentBottomNav active="tasks" />
 
-            {/* Render Modal Evaluasi secara kondisional jika data terpilih */}
             {selectedTask && (
                 <EvaluationModal
                     task={selectedTask}

@@ -4,7 +4,6 @@ import TeacherHeader from '@/Components/Teacher/Header';
 import TeacherBottomNav from '@/Components/Teacher/BottomNav';
 import { StudentCard, StudentModal } from '@/Components/Teacher/ClassComponents';
 
-// Mock Data tetap sama
 const STUDENTS = [
     {
         id: 1, name: 'Budi Santoso', initials: 'BS', color: 'bg-sky-500', lastActivity: 'Menyelesaikan Kuis PPN', activityType: 'done', progress: 85, level: 10, xp: 9800,
@@ -39,15 +38,12 @@ export default function TeacherClass() {
     return (
         <AppLayout>
             <TeacherHeader teacherName="Mr. Davis" teacherRole="Guru Perpajakan" initials="D" isOnline />
-
             <div className="pb-28 pt-2">
-                {/* Page title */}
                 <div className="px-4 mb-4">
                     <h1 className="text-2xl font-extrabold text-gray-900">Daftar Siswa & Log Aktivitas</h1>
                     <p className="text-sm text-gray-500 mt-0.5">Pantau progres dan aktivitas kelas Anda secara real-time.</p>
                 </div>
 
-                {/* Class summary strip */}
                 <div className="mx-4 mb-4 grid grid-cols-3 gap-2">
                     {[
                         { label: 'Total Siswa', value: STUDENTS.length, color: 'text-gray-900' },
@@ -61,7 +57,6 @@ export default function TeacherClass() {
                     ))}
                 </div>
 
-                {/* Search + filter */}
                 <div className="flex gap-2 px-4 mb-5">
                     <div className="flex-1 flex items-center gap-2 bg-white border border-gray-200 rounded-2xl px-3.5 py-2.5 shadow-sm focus-within:border-[#1A6B3C] transition-colors">
                         <svg className="w-4 h-4 text-gray-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -83,7 +78,6 @@ export default function TeacherClass() {
                         )}
                     </div>
 
-                    {/* Sort/filter button */}
                     <div className="relative">
                         <button onClick={() => setFilter(p => !p)}
                             className={`w-11 h-11 rounded-2xl border flex items-center justify-center shadow-sm transition-colors
@@ -113,7 +107,6 @@ export default function TeacherClass() {
                     </div>
                 </div>
 
-                {/* Student list */}
                 <div className="px-4">
                     {filtered.length === 0 ? (
                         <div className="text-center py-16 text-gray-400">
@@ -129,12 +122,9 @@ export default function TeacherClass() {
                     )}
                 </div>
             </div>
-
-            {/* Student Detail Modal */}
             {selected && (
                 <StudentModal student={selected} onClose={() => setSelected(null)} />
             )}
-
             <TeacherBottomNav active="class" />
         </AppLayout>
     );

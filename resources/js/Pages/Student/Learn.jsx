@@ -3,7 +3,6 @@ import AppLayout from '@/Components/AppLayout';
 import StudentHeader from '@/Components/Student/Header';
 import StudentBottomNav from '@/Components/Student/BottomNav';
 
-// ── Modul Card Component (Reusable) ───────────────────────────
 function ModuleCard({ id, title, description, progress, isLocked, onClick }) {
     return (
         <div
@@ -35,7 +34,6 @@ function ModuleCard({ id, title, description, progress, isLocked, onClick }) {
                     </p>
                 </div>
 
-                {/* Status Trigger Button / Indicator */}
                 <div className="shrink-0">
                     {isLocked ? (
                         <div className="w-9 h-9 rounded-xl bg-gray-200 flex items-center justify-center text-gray-400">
@@ -57,7 +55,6 @@ function ModuleCard({ id, title, description, progress, isLocked, onClick }) {
                 </div>
             </div>
 
-            {/* Progress Bar Area */}
             <div className="mt-4 pt-3 border-t border-gray-50">
                 <div className="flex justify-between items-center mb-1">
                     <span className="text-[10px] font-medium text-gray-400">Progress Belajar</span>
@@ -77,7 +74,6 @@ function ModuleCard({ id, title, description, progress, isLocked, onClick }) {
                 </div>
             </div>
 
-            {/* Efek visual ketika ter-unlocked secara langsung */}
             {!isLocked && progress === 0 && (
                 <div className="absolute top-0 right-0 w-2 h-2 bg-green-400 rounded-full animate-ping m-3" />
             )}
@@ -85,46 +81,38 @@ function ModuleCard({ id, title, description, progress, isLocked, onClick }) {
     );
 }
 
-// ── Main Learn Page ───────────────────────────────────────────
 export default function StudentLearn() {
-    // State untuk mengelola dinamika progress modul
     const [modules, setModules] = useState([
         {
             id: 1,
             title: "Pengantar Hukum Pajak & KUP",
             description: "Belajar dasar perpajakan, asas pemungutan pajak, dan hak-kewajiban wajib pajak di Indonesia.",
             progress: 0,
-            isLocked: false // Modul 1 default terbuka
+            isLocked: false
         },
         {
             id: 2,
             title: "Mekanisme PPh Orang Pribadi",
             description: "Simulasi perhitungan PTKP, tarif progresif Pasal 17, dan pelaporan SPT Tahunan OP.",
             progress: 0,
-            isLocked: true // Locked sampai Modul 1 = 100%
+            isLocked: true
         },
         {
             id: 3,
             title: "Pajak Penghasilan (PPh) Badan",
             description: "Analisis laporan keuangan fiskal, penyesuaian/koreksi fiskal, dan tarif PPh Badan.",
             progress: 0,
-            isLocked: true // Locked sampai Modul 2 = 100%
+            isLocked: true
         }
     ]);
 
-    // Handler klik simulasi bertambah progress + Auto Unlock
     const handleModuleClick = (moduleId) => {
         setModules(prevModules => {
             return prevModules.map((mod, index) => {
                 if (mod.id === moduleId) {
                     const newProgress = Math.min(mod.progress + 25, 100);
-
-                    // Salin data modul saat ini dengan progress baru
                     const updatedCurrentModule = { ...mod, progress: newProgress };
-
-                    // Jika progress modul saat ini mencapai 100%, buka kunci modul berikutnya
                     if (newProgress === 100 && prevModules[index + 1]) {
-                        // Kita beri tanda ke perubahan array ini untuk otomatis unlock indeks setelahnya
                         setTimeout(() => {
                             setModules(latestModules =>
                                 latestModules.map((m, idx) =>
@@ -141,7 +129,6 @@ export default function StudentLearn() {
         });
     };
 
-    // Reset Demo Utility
     const resetDemo = () => {
         setModules([
             { id: 1, title: "Pengantar Hukum Pajak & KUP", description: "Belajar dasar perpajakan, asas pemungutan pajak, dan hak-kewajiban wajib pajak di Indonesia.", progress: 0, isLocked: false },
@@ -150,19 +137,14 @@ export default function StudentLearn() {
         ]);
     };
 
-    // Kalkulasi Total General Progress untuk Banner Atas
     const totalProgress = Math.round(
         modules.reduce((acc, m) => acc + m.progress, 0) / modules.length
     );
 
     return (
         <AppLayout>
-            {/* Header bawaan aplikasi */}
             <StudentHeader notifCount={1} streakDays={3} userName="A" />
-
             <div className="flex-1 px-4 pt-3 pb-24 overflow-y-auto space-y-4">
-
-                {/* ── Ringkasan Peta Belajar / Milestone Card ── */}
                 <div className="bg-gradient-to-br from-[#1A6B3C] to-[#268a50] rounded-2xl p-4 text-white shadow-lg shadow-green-950/10 relative overflow-hidden">
                     <div className="absolute right-0 bottom-0 translate-x-3 translate-y-3 opacity-10 text-8xl">
                         📚
@@ -186,7 +168,6 @@ export default function StudentLearn() {
                     </div>
                 </div>
 
-                {/* ── Judul Section & Reset Demo Button ── */}
                 <div className="flex items-center justify-between px-1">
                     <div>
                         <h3 className="text-xs font-black text-gray-400 uppercase tracking-wider">Modul Pembelajaran</h3>
@@ -200,7 +181,6 @@ export default function StudentLearn() {
                     </button>
                 </div>
 
-                {/* ── Daftar Modul Dinamis ── */}
                 <div className="space-y-3">
                     {modules.map((mod) => (
                         <ModuleCard

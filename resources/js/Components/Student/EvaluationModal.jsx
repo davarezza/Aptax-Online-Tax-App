@@ -26,8 +26,6 @@ export default function EvaluationModal({ task, onClose }) {
     return (
         <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/50 backdrop-blur-sm">
             <div className="bg-white rounded-t-3xl w-full max-w-md h-[85vh] flex flex-col shadow-2xl animate-slide-up">
-
-                {/* ── HEADER MODAL ── */}
                 <div className="px-6 pt-5 pb-4 border-b border-gray-100 shrink-0 relative">
                     <button
                         onClick={onClose}
@@ -40,8 +38,6 @@ export default function EvaluationModal({ task, onClose }) {
                         EVALUASI PRIVAT
                     </span>
                     <h3 className="text-lg font-black text-slate-800 pr-8">{task.title}</h3>
-
-                    {/* Inline Badges Row */}
                     <div className="flex items-center gap-3 mt-2.5">
                         <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-lg bg-blue-100 text-blue-700">
                             {task.status}
@@ -55,10 +51,7 @@ export default function EvaluationModal({ task, onClose }) {
                     </div>
                 </div>
 
-                {/* ── CONTENT AREA ── */}
                 <div className="flex-1 overflow-y-auto p-5 space-y-4 bg-white">
-
-                    {/* AI Feedback Section */}
                     <div className="bg-[#F0F6FF] border border-[#E2EEFF] rounded-2xl p-4">
                         <div className="flex items-center gap-2 mb-2.5">
                             <div className="w-6 h-6 rounded-full bg-indigo-600 flex items-center justify-center text-white text-[10px]">
@@ -73,12 +66,9 @@ export default function EvaluationModal({ task, onClose }) {
                         </p>
                     </div>
 
-                    {/* Thread Subtitle */}
                     <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider pt-2">
                         THREAD PRIVAT — SISWA & GURU
                     </p>
-
-                    {/* Chat Bubble List */}
                     <div className="space-y-3 pt-1">
                         {messages.map((msg) => (
                             <div key={msg.id} className={`flex flex-col ${msg.sender === 'student' ? 'items-end' : 'items-start'}`}>
@@ -94,8 +84,6 @@ export default function EvaluationModal({ task, onClose }) {
                         ))}
                     </div>
                 </div>
-
-                {/* ── CHAT INPUT FOOTER ── */}
                 <form onSubmit={handleSendMessage} className="p-3 border-t border-gray-100 bg-white flex items-center gap-2 shrink-0">
                     <input
                         type="text"

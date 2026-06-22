@@ -23,7 +23,6 @@ export default function ManualForm({ taxTopics, onSave, onBack }) {
 
     return (
         <div className="mx-4 mb-4 animate-fade-in">
-            {/* Header Form */}
             <div className="flex items-center gap-3 mb-5">
                 <button
                     onClick={onBack}
@@ -39,7 +38,6 @@ export default function ManualForm({ taxTopics, onSave, onBack }) {
                 </div>
             </div>
 
-            {/* Form Input Fields Card */}
             <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-5 space-y-5">
                 <div>
                     <label className="block text-sm font-semibold text-gray-700 mb-1.5">Judul Studi Kasus</label>

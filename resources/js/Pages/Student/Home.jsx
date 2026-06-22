@@ -3,7 +3,6 @@ import AppLayout from '@/Components/AppLayout';
 import StudentHeader from '@/Components/Student/Header';
 import StudentBottomNav from '@/Components/Student/BottomNav';
 
-// ── Quiz Modal ────────────────────────────────────────────────
 function QuizModal({ onClose }) {
     const [selected, setSelected] = useState(null);
     const [submitted, setSubmitted] = useState(false);
@@ -106,7 +105,6 @@ function QuizModal({ onClose }) {
     );
 }
 
-// ── Main Page ─────────────────────────────────────────────────
 export default function StudentHome() {
     const [quizOpen, setQuizOpen] = useState(false);
     const xp = 1450;
@@ -117,8 +115,6 @@ export default function StudentHome() {
     return (
         <AppLayout>
             <StudentHeader notifCount={1} streakDays={3} userName="A" />
-
-            {/* Level + XP Bar */}
             <div className="px-4 pt-3 pb-2">
                 <div className="bg-white border border-gray-100 rounded-2xl px-4 py-3 shadow-sm flex items-center gap-3">
                     <div className="flex items-center gap-2 shrink-0">
@@ -141,7 +137,6 @@ export default function StudentHome() {
                 </div>
             </div>
 
-            {/* ── Tax City Area ── */}
             <div className="flex-1 relative overflow-hidden mx-3 mb-3 rounded-3xl bg-gradient-to-b from-[#7BC8C8] via-[#A8DDD4] to-[#B5E8BE]">
                 <div className="absolute top-4 left-8 w-16 h-6 bg-white/60 rounded-full blur-sm" />
                 <div className="absolute top-7 left-14 w-10 h-4 bg-white/40 rounded-full blur-sm" />

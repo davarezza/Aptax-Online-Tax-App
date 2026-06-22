@@ -4,7 +4,6 @@ import TeacherHeader from '@/Components/Teacher/Header';
 import TeacherBottomNav from '@/Components/Teacher/BottomNav';
 import { AiModal } from '@/Components/Teacher/AiModal';
 
-// ── DATA MOCK UTAMA ───────────────────────────────────────────────────────────
 
 const MASTERY_DATA = [
     { topic: 'Faktur Pajak & PPN',         pct: 88, level: 'mastered' },
@@ -48,8 +47,6 @@ function RankMedal({ rank }) {
     if (rank === 3) return <span className="text-xl">🥉</span>;
     return <span className="w-7 text-center text-sm font-bold text-gray-400">{rank}</span>;
 }
-
-// ── ANALYTICS SUB-TAB ─────────────────────────────────────────────────────────
 
 function AnalyticsTab({ onOpenAI }) {
     const totalXp = LEADERBOARD.reduce((s, x) => s + x.xp, 0);
@@ -125,8 +122,6 @@ function AnalyticsTab({ onOpenAI }) {
     );
 }
 
-// ── RANKING SUB-TAB ───────────────────────────────────────────────────────────
-
 function RankingTab() {
     return (
         <div className="px-4 space-y-3">
@@ -172,10 +167,8 @@ function RankingTab() {
     );
 }
 
-// ── COMPONENT UTAMA PAGE ──────────────────────────────────────────────────────
-
 export default function TeacherAnalytics() {
-    const [tab, setTab]         = useState('analytics'); // 'analytics' | 'ranking'
+    const [tab, setTab]         = useState('analytics');
     const [aiModal, setAiModal] = useState(false);
 
     return (
@@ -183,13 +176,11 @@ export default function TeacherAnalytics() {
             <TeacherHeader teacherName="Mr. Davis" teacherRole="Guru Perpajakan" initials="D" isOnline />
 
             <div className="pb-28 pt-2">
-                {/* Page header */}
                 <div className="px-4 mb-4">
                     <h1 className="text-2xl font-extrabold text-gray-900">Class Analytics</h1>
                     <p className="text-sm text-gray-500 mt-0.5">Pantau performa dan progres kompetensi kelas Anda.</p>
                 </div>
 
-                {/* Tab toggle */}
                 <div className="flex bg-gray-100 rounded-xl p-1 mx-4 mb-5">
                     {[
                         { key: 'analytics', label: 'Analytics' },
@@ -207,14 +198,11 @@ export default function TeacherAnalytics() {
                     ))}
                 </div>
 
-                {/* Switch Render Tab */}
                 {tab === 'analytics'
                     ? <AnalyticsTab onOpenAI={() => setAiModal(true)} />
                     : <RankingTab />
                 }
             </div>
-
-            {/* AI Modal component yang di-isolasi */}
             {aiModal && <AiModal onClose={() => setAiModal(false)} />}
 
             <TeacherBottomNav active="analytics" />

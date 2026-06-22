@@ -4,7 +4,6 @@ import TeacherHeader from '@/Components/Teacher/Header';
 import TeacherBottomNav from '@/Components/Teacher/BottomNav';
 import ManualForm from '@/Components/Teacher/ManualForm';
 
-// ── CONSTANTS DATA POOL ──────────────────────────────────────────────────────
 const TAX_TOPICS = [
     'PPh 21 (Income Tax)',
     'PPh 23 (Withholding Tax)',
@@ -36,13 +35,11 @@ const INITIAL_BANK = [
 ];
 
 export default function TeacherMaker() {
-    const [mode, setMode] = useState('main'); // 'main' atau 'manual'
+    const [mode, setMode] = useState('main');
     const [topic, setTopic] = useState(TAX_TOPICS[0]);
     const [difficulty, setDiff] = useState('Intermediate');
     const [bank, setBank] = useState(INITIAL_BANK);
     const [generating, setGenerating] = useState(false);
-
-    // Dropdown Custom Filter State
     const [filterOpen, setFilterOpen] = useState(false);
     const [filterSource, setFilterSource] = useState('All');
 
@@ -50,7 +47,6 @@ export default function TeacherMaker() {
         setBank(prev => prev.map(q => q.id === id ? { ...q, released: !q.released } : q));
     };
 
-    // Handler Pemicu Loading + Generate AI Dinamis
     const handleGenerateAI = () => {
         setGenerating(true);
         setTimeout(() => {
@@ -68,7 +64,7 @@ export default function TeacherMaker() {
             };
             setBank([newAiQuestion, ...bank]);
             setGenerating(false);
-        }, 1000); // Penambahan loading 1 detik sebelum data masuk
+        }, 1000);
     };
 
     const handleSaveManualEntry = (formData) => {
@@ -97,7 +93,6 @@ export default function TeacherMaker() {
     return (
         <AppLayout>
             <TeacherHeader teacherName="Mr. Davis" teacherRole="Guru Perpajakan" initials="D" isOnline />
-
             <div className="pb-28 pt-3 flex-1 overflow-y-auto">
                 {mode === 'manual' ? (
                     <ManualForm
@@ -107,7 +102,6 @@ export default function TeacherMaker() {
                     />
                 ) : (
                     <>
-                        {/* ── SEKSI GENERATOR CARD AI ── */}
                         <div className="mx-4 mb-5 bg-white rounded-2xl border border-gray-100 shadow-sm p-5 space-y-4">
                             <div className="flex items-center gap-2">
                                 <div className="w-8 h-8 rounded-xl bg-teal-50 flex items-center justify-center text-sm">🤖</div>
@@ -140,7 +134,6 @@ export default function TeacherMaker() {
                                 </div>
                             </div>
 
-                            {/* Green Call to Action Banner Box */}
                             <div className="bg-[#1A6B3C] rounded-2xl p-4 relative overflow-hidden">
                                 <p className="text-white font-extrabold text-base mb-0.5">Ready to generate?</p>
                                 <p className="text-white/70 text-xs mb-4 leading-relaxed">Our AI will create a unique, gamified scenario complete with calculations and multiple-choice answers.</p>
@@ -167,12 +160,9 @@ export default function TeacherMaker() {
                             </div>
                         </div>
 
-                        {/* ── SEKSI DAFTAR BANK SOAL (DENGAN UI FILTER UTAL ASLI) ── */}
                         <div className="mx-4 mb-6">
                             <div className="flex items-center justify-between mb-3">
                                 <h2 className="text-lg font-extrabold text-gray-900">Question Bank</h2>
-
-                                {/* UI Filter Dropdown Popover Asli */}
                                 <div className="relative">
                                     <button
                                         onClick={() => setFilterOpen(!filterOpen)}
@@ -196,7 +186,6 @@ export default function TeacherMaker() {
                                 </div>
                             </div>
 
-                            {/* Daftar Grid List Row */}
                             <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden divide-y divide-gray-50">
                                 <div className="grid grid-cols-[1fr_auto_auto_auto] gap-3 px-4 py-2.5 bg-gray-50 text-[10px] font-bold text-gray-400 uppercase tracking-wide">
                                     <span>Scenario Title</span>

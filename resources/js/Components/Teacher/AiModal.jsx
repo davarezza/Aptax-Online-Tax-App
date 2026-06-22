@@ -16,7 +16,6 @@ export function AiModal({ onClose }) {
     return (
         <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 backdrop-blur-sm" onClick={onClose}>
             <div className="bg-white w-full max-w-md rounded-t-3xl max-h-[92vh] flex flex-col overflow-hidden" onClick={e => e.stopPropagation()}>
-                {/* Header */}
                 <div className="px-5 pt-5 pb-4 border-b border-gray-100 shrink-0">
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
@@ -38,9 +37,7 @@ export function AiModal({ onClose }) {
                     </div>
                 </div>
 
-                {/* Body */}
                 <div className="flex-1 overflow-y-auto px-5 py-4 space-y-5">
-                    {/* Executive Summary */}
                     <div>
                         <p className="text-xs font-bold text-gray-400 uppercase tracking-wide mb-2">📊 Executive Summary</p>
                         <div className="bg-indigo-50 border border-indigo-100 rounded-2xl p-4">
@@ -50,7 +47,6 @@ export function AiModal({ onClose }) {
                         </div>
                     </div>
 
-                    {/* Struggle Points */}
                     <div>
                         <p className="text-xs font-bold text-gray-400 uppercase tracking-wide mb-2">🔍 Student Struggle Points</p>
                         <div className="space-y-2.5">
@@ -63,7 +59,6 @@ export function AiModal({ onClose }) {
                         </div>
                     </div>
 
-                    {/* Action Plan */}
                     <div>
                         <p className="text-xs font-bold text-gray-400 uppercase tracking-wide mb-2">🎯 Personalized Action Plan</p>
                         <div className="space-y-2.5">
@@ -78,7 +73,6 @@ export function AiModal({ onClose }) {
                     <div className="h-2" />
                 </div>
 
-                {/* Footer */}
                 <div className="px-5 py-4 border-t border-gray-100 shrink-0">
                     <button onClick={onClose} className="w-full py-3 rounded-2xl bg-[#1A6B3C] text-white font-bold text-sm hover:opacity-90 transition-opacity">
                         Tutup Laporan

@@ -4,8 +4,8 @@ import StudentHeader from '@/Components/Student/Header';
 import StudentBottomNav from '@/Components/Student/BottomNav';
 
 export default function StudentLeaderboard() {
-    const [filterTab, setFilterTab] = useState('global'); // 'global' atau 'weekly'
-    const [showMore, setShowMore] = useState(false); // Mengatur limit 4 besar menjadi 6 besar
+    const [filterTab, setFilterTab] = useState('global');
+    const [showMore, setShowMore] = useState(false);
 
     const currentUser = {
         name: "Alex Johnson",
@@ -17,7 +17,6 @@ export default function StudentLeaderboard() {
         initials: "AJ"
     };
 
-    // Dataset Diperbanyak Hingga 6 Peringkat Sesuai Gambar image_563a9b.png
     const leaderboardData = {
         global: [
             { id: 99, name: "Alex Johnson (You)", rank: 1, xp: 12450, initials: "AJ", isSelf: true, titleLevel: "Senior Tax Associate", badgeColor: "bg-[#00C48C]", textColor: "text-[#1A6B3C]" },
@@ -37,11 +36,9 @@ export default function StudentLeaderboard() {
         ]
     };
 
-    // Atur data terpotong dinamis (4 jika false, 6 jika true)
     const currentLimit = showMore ? 6 : 4;
     const filteredLeaderboard = leaderboardData[filterTab].slice(0, currentLimit);
 
-    // Fungsi Render Elemen Peringkat (Medali atau Angka Standar)
     const renderRankBadge = (rank) => {
         if (rank === 1) return <span className="text-lg">🥇</span>;
         if (rank === 2) return <span className="text-lg">🥈</span>;
@@ -52,10 +49,7 @@ export default function StudentLeaderboard() {
     return (
         <AppLayout>
             <StudentHeader notifCount={1} streakDays={3} userName="A" />
-
             <div className="flex-1 flex flex-col bg-[#F8FAFC] overflow-y-auto pb-24">
-
-                {/* ── CARD PROFIL RANK UTAMA (Sesuai image_5648cc.png) ── */}
                 <div className="mx-4 mt-4 p-5 rounded-[32px] bg-gradient-to-b from-[#E6F9F3] to-white border border-[#D5F2E8] shadow-sm flex flex-col items-center relative overflow-hidden">
                     <div className="absolute -top-6 -right-6 w-20 h-20 bg-[#22C55E]/10 rounded-full" />
 
@@ -85,11 +79,8 @@ export default function StudentLeaderboard() {
                     </div>
                 </div>
 
-                {/* ── LIST LEADERBOARD & FILTER TAB ── */}
                 <div className="px-5 mt-5 flex flex-col flex-1">
                     <h3 className="text-base font-black text-slate-800 mb-3">Class Leaderboard</h3>
-
-                    {/* Segmented Filter Control */}
                     <div className="bg-gray-200/60 p-1 rounded-2xl flex items-center w-full mb-4">
                         <button
                             onClick={() => setFilterTab('global')}
@@ -108,8 +99,6 @@ export default function StudentLeaderboard() {
                             Weekly Quest
                         </button>
                     </div>
-
-                    {/* Banner Info Reset Mingguan */}
                     {filterTab === 'weekly' && (
                         <div className="mb-4 p-3 bg-[#FFFBEB] border border-[#FDE68A] rounded-2xl flex items-start gap-2.5">
                             <span className="text-amber-500 text-sm shrink-0">⚡</span>
@@ -122,7 +111,6 @@ export default function StudentLeaderboard() {
                         </div>
                     )}
 
-                    {/* ── INTERAKTIF LEADERBOARD LIST (Sesuai image_563a9b.png) ── */}
                     <div className="space-y-2.5">
                         {filteredLeaderboard.map((student) => (
                             <div
@@ -133,7 +121,6 @@ export default function StudentLeaderboard() {
                                     : 'bg-white border-gray-100 shadow-xs'
                                 }`}
                             >
-                                {/* Sisi Kiri: Angka/Medali + Avatar Bulat + Nama & SubLevel */}
                                 <div className="flex items-center gap-3">
                                     <div className="w-6 flex justify-center shrink-0">
                                         {renderRankBadge(student.rank)}
@@ -153,7 +140,6 @@ export default function StudentLeaderboard() {
                                     </div>
                                 </div>
 
-                                {/* Sisi Kanan: Angka Nilai XP Besar Bersih */}
                                 <div className="text-right">
                                     <span className={`text-sm font-black tracking-tight block ${student.textColor}`}>
                                         {student.xp.toLocaleString()}
@@ -166,7 +152,6 @@ export default function StudentLeaderboard() {
                         ))}
                     </div>
 
-                    {/* ── TOMBOL LIHAT LEBIH BANYAK (Dinamis Toggle 4 / 6) ── */}
                     <div className="mt-4 flex justify-center">
                         <button
                             onClick={() => setShowMore(!showMore)}

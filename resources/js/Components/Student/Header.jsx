@@ -15,15 +15,12 @@ export default function StudentHeader({
 }) {
     return (
         <header className="relative z-10 px-4 pt-4 pb-2 flex items-center justify-between bg-white/70 backdrop-blur-sm border-b border-gray-100/60">
-            {/* Logo + Title */}
             <div>
                 <h1 className="text-base font-black text-[#1A6B3C] tracking-tight leading-none">APTAX</h1>
                 <p className="text-[10px] text-gray-400 font-medium">Tax City</p>
             </div>
 
-            {/* Right side */}
             <div className="flex items-center gap-2">
-                {/* Streak pill */}
                 {streakDays > 0 && (
                     <div className="flex items-center gap-1 bg-orange-50 border border-orange-200 rounded-full px-2.5 py-1">
                         <span className="text-sm">🔥</span>
@@ -31,7 +28,6 @@ export default function StudentHeader({
                     </div>
                 )}
 
-                {/* Notification bell */}
                 <div className="relative">
                     <button className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 transition-colors">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} className="w-4 h-4 text-gray-600">
@@ -45,7 +41,6 @@ export default function StudentHeader({
                     )}
                 </div>
 
-                {/* Avatar — navigasi ke halaman profil siswa */}
                 <Link href="/student/profile" className="relative group" aria-label="Profil Siswa">
                     <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#1A6B3C] to-[#34C27A] flex items-center justify-center text-white font-black text-xs shadow-md ring-2 ring-white group-hover:ring-[#34C27A] transition-all">
                         {userName.charAt(0).toUpperCase()}

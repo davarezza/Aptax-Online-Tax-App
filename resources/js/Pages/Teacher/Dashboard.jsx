@@ -4,7 +4,6 @@ import AppLayout from '@/Components/AppLayout';
 import TeacherHeader from '@/Components/Teacher/Header';
 import TeacherBottomNav from '@/Components/Teacher/BottomNav';
 
-// ── Star Rating ───────────────────────────────────────────────
 function Stars({ count }) {
     return (
         <div className="flex gap-0.5">
@@ -17,7 +16,6 @@ function Stars({ count }) {
     );
 }
 
-// ── Toggle Switch ─────────────────────────────────────────────
 function Toggle({ checked, onChange }) {
     return (
         <button onClick={() => onChange(!checked)}
@@ -27,7 +25,6 @@ function Toggle({ checked, onChange }) {
     );
 }
 
-// ── Main Teacher Dashboard ────────────────────────────────────
 export default function TeacherDashboard() {
     const [topic, setTopic] = useState('');
     const [difficulty, setDifficulty] = useState('');
@@ -76,7 +73,6 @@ export default function TeacherDashboard() {
                         <p className="text-xs text-gray-500 mt-0.5">Ini ringkasan kelas Anda hari ini.</p>
                     </div>
 
-                    {/* Stats */}
                     <div className="grid grid-cols-2 gap-2.5">
                         {stats.map((s) => (
                             <div key={s.label} className={`border rounded-2xl p-3.5 ${s.color}`}>
@@ -87,7 +83,6 @@ export default function TeacherDashboard() {
                         ))}
                     </div>
 
-                    {/* Announcement */}
                     <div className="bg-white border border-red-100 rounded-2xl p-3.5 flex gap-3 shadow-sm">
                         <div className="w-9 h-9 bg-red-50 rounded-xl flex items-center justify-center shrink-0 text-base">📢</div>
                         <div className="flex-1 min-w-0">
@@ -105,7 +100,6 @@ export default function TeacherDashboard() {
                         </button>
                     </div>
 
-                    {/* AI Case Maker */}
                     <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
                         <div className="px-4 pt-4 pb-3 border-b border-gray-50 flex items-center gap-2.5">
                             <div className="w-8 h-8 bg-gradient-to-br from-purple-500 to-violet-600 rounded-xl flex items-center justify-center text-white text-sm">🤖</div>
@@ -155,7 +149,6 @@ export default function TeacherDashboard() {
                         </div>
                     </div>
 
-                    {/* Question Bank */}
                     <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
                         <div className="px-4 py-3 border-b border-gray-50 flex items-center justify-between">
                             <div>
@@ -197,7 +190,6 @@ export default function TeacherDashboard() {
                         </div>
                     </div>
 
-                    {/* Quick Actions */}
                     <div>
                         <h3 className="text-xs font-bold text-gray-700 mb-2.5">Quick Actions</h3>
                         <div className="grid grid-cols-2 gap-2.5">
