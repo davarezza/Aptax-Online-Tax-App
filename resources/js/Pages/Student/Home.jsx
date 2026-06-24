@@ -2,27 +2,32 @@ import { useState } from 'react';
 import AppLayout from '@/Components/AppLayout';
 import StudentHeader from '@/Components/Student/Header';
 import StudentBottomNav from '@/Components/Student/BottomNav';
+import TaxCalculator from '@/Components/Student/TaxCalculator';
 
 function QuizModal({ onClose }) {
-    const [selected, setSelected] = useState(null);
+    const [answer, setAnswer] = useState('');
     const [submitted, setSubmitted] = useState(false);
+    const [calcOpen, setCalcOpen] = useState(false);
 
     const question = {
         scenario:
             'PT Maju Bersama menerima penghasilan bruto Rp 500.000.000 pada tahun pajak 2024 dengan total biaya operasional Rp 320.000.000. Berdasarkan UU PPh, berapakah Penghasilan Kena Pajak (PKP) perusahaan tersebut?',
-        options: [
-            { id: 'a', label: 'A', text: 'Rp 820.000.000' },
-            { id: 'b', label: 'B', text: 'Rp 180.000.000' },
-            { id: 'c', label: 'C', text: 'Rp 500.000.000' },
-            { id: 'd', label: 'D', text: 'Rp 320.000.000' },
-        ],
-        correct: 'b',
+        correctValue: 180000000,
+    };
+
+    // Validasi input agar murni angka dan otomatis terformat rupiah
+    const handleInputChange = (val) => {
+        const cleanNum = val.replace(/\D/g, '');
+        setAnswer(cleanNum ? parseInt(cleanNum).toLocaleString('id-ID') : '');
     };
 
     const handleSubmit = () => {
-        if (!selected) return;
+        if (!answer) return;
         setSubmitted(true);
     };
+
+    const userValue = parseInt(answer.replace(/\D/g, '')) || 0;
+    const isCorrect = userValue === question.correctValue;
 
     return (
         <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/50 backdrop-blur-sm">
@@ -34,7 +39,7 @@ function QuizModal({ onClose }) {
                     <div className="flex items-center justify-between mb-4">
                         <div>
                             <span className="text-[10px] font-bold tracking-widest text-[#1A6B3C] uppercase">
-                                📋 Kuis Pajak Penghasilan
+                                📋 Kuis Isian Pajak Penghasilan
                             </span>
                             <p className="text-xs text-gray-400 mt-0.5">PT Maju Bersama · Difficulty: Intermediate</p>
                         </div>
@@ -42,61 +47,79 @@ function QuizModal({ onClose }) {
                             ✕
                         </button>
                     </div>
-                    <div className="bg-[#F0F9F4] border border-[#C8E8D6] rounded-2xl p-4 mb-5">
+
+                    <div className="bg-[#F0F9F4] border border-[#C8E8D6] rounded-2xl p-4 mb-4">
                         <p className="text-[11px] font-semibold text-[#1A6B3C] mb-1.5">📌 Skenario Kasus</p>
                         <p className="text-sm text-gray-700 leading-relaxed">{question.scenario}</p>
                     </div>
-                    <p className="text-xs font-semibold text-gray-500 mb-3 uppercase tracking-wide">Pilih Jawaban</p>
-                    <div className="space-y-2.5 mb-6">
-                        {question.options.map((opt) => {
-                            let style = 'border-gray-200 bg-white text-gray-700';
-                            if (submitted) {
-                                if (opt.id === question.correct) style = 'border-[#1A6B3C] bg-[#F0F9F4] text-[#1A6B3C] font-semibold';
-                                else if (selected === opt.id) style = 'border-red-400 bg-red-50 text-red-600';
-                                else style = 'border-gray-100 bg-gray-50 text-gray-400';
-                            } else if (selected === opt.id) {
-                                style = 'border-[#1A6B3C] bg-[#F0F9F4] text-[#1A6B3C]';
-                            }
-                            return (
-                                <button key={opt.id} disabled={submitted} onClick={() => setSelected(opt.id)}
-                                    className={`w-full flex items-center gap-3 p-3.5 rounded-xl border-2 text-left transition-all ${style}`}>
-                                    <span className="w-7 h-7 rounded-lg bg-current/10 flex items-center justify-center text-xs font-bold shrink-0">{opt.label}</span>
-                                    <span className="text-sm">{opt.text}</span>
-                                </button>
-                            );
-                        })}
+
+                    {/* Section Input Jawaban Isian */}
+                    <div className="mb-5">
+                        <label className="text-xs font-semibold text-gray-500 block mb-2 uppercase tracking-wide">
+                            Input Jawaban Anda (Rupiah)
+                        </label>
+                        <div className="relative flex items-center bg-gray-50 rounded-xl border-2 border-gray-200 focus-within:border-[#1A6B3C] focus-within:bg-white transition-all px-3.5 py-3">
+                            <span className="text-sm font-bold text-gray-400 mr-1 shrink-0">Rp</span>
+                            <input
+                                type="text"
+                                value={answer}
+                                disabled={submitted}
+                                onChange={(e) => handleInputChange(e.target.value)}
+                                placeholder="Masukkan nominal angka saja..."
+                                className="w-full bg-transparent text-sm font-bold text-gray-800 outline-none placeholder-gray-400"
+                            />
+                        </div>
                     </div>
+
+                    {/* Tampilan Umpan Balik Koreksi */}
                     {submitted && (
-                        <div className={`rounded-2xl p-4 mb-4 text-center ${selected === question.correct ? 'bg-[#F0F9F4] border border-[#C8E8D6]' : 'bg-red-50 border border-red-200'}`}>
-                            {selected === question.correct ? (
+                        <div className={`rounded-2xl p-4 mb-5 text-center ${isCorrect ? 'bg-[#F0F9F4] border border-[#C8E8D6]' : 'bg-red-50 border border-red-200'}`}>
+                            {isCorrect ? (
                                 <>
                                     <p className="text-2xl mb-1">🎉</p>
-                                    <p className="font-bold text-[#1A6B3C]">Jawaban Benar!</p>
-                                    <p className="text-xs text-gray-500 mt-1">PKP = Rp 500jt − Rp 320jt = <strong>Rp 180.000.000</strong></p>
+                                    <p className="font-bold text-[#1A6B3C]">Jawaban Tepat!</p>
+                                    <p className="text-xs text-gray-500 mt-1">PKP = Rp 500.000.000 − Rp 320.000.000 = <strong>Rp 180.000.000</strong></p>
                                     <p className="text-xs font-bold text-[#1A6B3C] mt-2">+50 XP diperoleh! 🏆</p>
                                 </>
                             ) : (
                                 <>
                                     <p className="text-2xl mb-1">😔</p>
                                     <p className="font-bold text-red-500">Jawaban Kurang Tepat</p>
-                                    <p className="text-xs text-gray-500 mt-1">Jawaban benar: B · Rp 180.000.000</p>
-                                    <p className="text-xs text-gray-400 mt-2">Pelajari kembali modul PPh Badan yuk!</p>
+                                    <p className="text-xs text-gray-500 mt-1">Jawaban Anda: Rp {userValue.toLocaleString('id-ID')}</p>
+                                    <p className="text-xs text-gray-700 font-semibold mt-1">Jawaban benar: <strong>Rp 180.000.000</strong></p>
                                 </>
                             )}
                         </div>
                     )}
-                    {!submitted ? (
-                        <button onClick={handleSubmit} disabled={!selected}
-                            className={`w-full py-3.5 rounded-2xl font-bold text-sm transition-all ${selected ? 'bg-[#1A6B3C] text-white shadow-lg shadow-green-900/20 active:scale-95' : 'bg-gray-100 text-gray-400 cursor-not-allowed'}`}>
-                            Kirim Jawaban
+
+                    {/* Button Action Bar */}
+                    <div className="flex gap-2">
+                        {/* Tombol Mini Kalkulator Pajak */}
+                        <button
+                            onClick={() => setCalcOpen(true)}
+                            className="w-12 h-12 rounded-2xl bg-amber-50 border border-amber-200 text-amber-600 flex items-center justify-center text-lg shadow-sm hover:bg-amber-100 active:scale-95 transition-all shrink-0"
+                            title="Buka kalkulator pajak"
+                        >
+                            🧮
                         </button>
-                    ) : (
-                        <button onClick={onClose} className="w-full py-3.5 rounded-2xl font-bold text-sm bg-[#1A6B3C] text-white shadow-lg shadow-green-900/20 active:scale-95">
-                            Selesai & Tutup
-                        </button>
-                    )}
+
+                        {!submitted ? (
+                            <button onClick={handleSubmit} disabled={!answer}
+                                className={`flex-1 py-3.5 rounded-2xl font-bold text-sm transition-all ${answer ? 'bg-[#1A6B3C] text-white shadow-lg shadow-green-900/20 active:scale-95' : 'bg-gray-100 text-gray-400 cursor-not-allowed'}`}>
+                                Kirim Jawaban
+                            </button>
+                        ) : (
+                            <button onClick={onClose} className="flex-1 py-3.5 rounded-2xl font-bold text-sm bg-[#1A6B3C] text-white shadow-lg shadow-green-900/20 active:scale-95">
+                                Selesai & Tutup
+                            </button>
+                        )}
+                    </div>
                 </div>
             </div>
+
+            {/* Render Mini Calculator Sub-Component */}
+            <TaxCalculator isOpen={calcOpen} onClose={() => setCalcOpen(false)} />
+
             <style>{`
                 @keyframes slide-up { from { transform: translateY(100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
                 .animate-slide-up { animation: slide-up 0.35s cubic-bezier(0.32,0.72,0,1) forwards; }
