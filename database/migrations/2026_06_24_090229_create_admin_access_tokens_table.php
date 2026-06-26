@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::create('admin_access_tokens', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('class_id')->nullable()->constrained('classes')->onDelete('cascade');
             $table->string('token_code')->unique();
             $table->boolean('is_used')->default(false);
             $table->timestamps();

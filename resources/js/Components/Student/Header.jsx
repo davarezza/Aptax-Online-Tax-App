@@ -1,18 +1,25 @@
-import { Link } from '@inertiajs/react';
+import { router } from '@inertiajs/react';
 
 /**
  * StudentHeader
  *
  * Props:
- *  - notifCount  {number}  badge angka di bell (default 0 = tidak tampil)
- *  - streakDays  {number}  jumlah hari streak (default 0 = tidak tampil)
- *  - userName    {string}  inisial avatar (default 'A')
+ * - notifCount  {number}  badge angka di bell (default 0 = tidak tampil)
+ * - streakDays  {number}  jumlah hari streak (default 0 = tidak tampil)
+ * - userName    {string}  inisial avatar (default 'A')
  */
 export default function StudentHeader({
     notifCount = 0,
     streakDays = 0,
     userName = 'A',
 }) {
+    const handleLogout = (e) => {
+        e.preventDefault();
+        if (confirm('Apakah Anda yakin ingin keluar dari APTAX?')) {
+            router.post(route('logout'));
+        }
+    };
+
     return (
         <header className="relative z-10 px-4 pt-4 pb-2 flex items-center justify-between bg-white/70 backdrop-blur-sm border-b border-gray-100/60">
             <div>
@@ -41,12 +48,21 @@ export default function StudentHeader({
                     )}
                 </div>
 
-                <Link href="/student/profile" className="relative group" aria-label="Profil Siswa">
-                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#1A6B3C] to-[#34C27A] flex items-center justify-center text-white font-black text-xs shadow-md ring-2 ring-white group-hover:ring-[#34C27A] transition-all">
+                <button
+                    onClick={handleLogout}
+                    className="relative group cursor-pointer focus:outline-none"
+                    title="Keluar Aplikasi"
+                    aria-label="Logout"
+                >
+                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-red-500 to-orange-500 flex items-center justify-center text-white font-black text-xs shadow-md ring-2 ring-white group-hover:ring-red-500 transition-all">
                         {userName.charAt(0).toUpperCase()}
                     </div>
-                    <div className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-400 border-2 border-white rounded-full" />
-                </Link>
+                    <div className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-red-600 border border-white rounded-full flex items-center justify-center shadow-sm">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={3} className="w-2 h-2 text-white">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M5.636 5.636a9 9 0 1 0 12.728 0M12 3v9" />
+                        </svg>
+                    </div>
+                </button>
             </div>
         </header>
     );
