@@ -86,5 +86,9 @@ class DatabaseSeeder extends Seeder
         ]);
 
         $this->command->info('Database seeding sukses tanpa eror constraint!');
+
+        $this->call([
+            TaskSeeder::class,
+        ]);
     }
 }

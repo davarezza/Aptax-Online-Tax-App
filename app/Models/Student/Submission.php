@@ -4,7 +4,7 @@ namespace App\Models\Student;
 
 use Illuminate\Database\Eloquent\Model;
 use App\Models\Teacher\Task;
-use App\Models\Shared\User;
+use App\Models\User;
 use App\Models\Shared\SubmissionFeedback;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 

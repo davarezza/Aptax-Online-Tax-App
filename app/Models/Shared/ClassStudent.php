@@ -1,16 +1,16 @@
 <?php
 
-namespace App\Models\Teacher;
+namespace App\Models\Shared;
 
 use Illuminate\Database\Eloquent\Model;
-use App\Models\Shared\User;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
-class ClassModel extends Model
+class ClassStudent extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['teacher_id', 'class_name', 'class_code'];
+    protected $fillable = ['class_id', 'student_id'];
 
     public function teacher()
     {

@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
+use App\Http\Controllers\StudentController;
 
 Route::middleware('guest')->group(function () {
     Route::get('/', function () {
@@ -18,11 +19,13 @@ Route::middleware('auth')->group(function () {
     Route::post('logout', [AuthenticatedSessionController::class, 'destroy'])->name('logout');
 });
 
-Route::prefix('student')->name('student.')->group(function () {
-    Route::get('/home', fn() => Inertia::render('Student/Home'))->name('home');
-    Route::get('/learn', fn() => Inertia::render('Student/Learn'))->name('learn');
-    Route::get('/tasks', fn() => Inertia::render('Student/Tasks'))->name('tasks');
-    Route::get('/leaderboard', fn() => Inertia::render('Student/Leaderboard'))->name('leaderboard');
+Route::middleware(['auth'])->prefix('student')->name('student.')->group(function () {
+    Route::get('/home', [StudentController::class, 'home'])->name('home');
+    Route::get('/learn', [StudentController::class, 'learn'])->name('learn');
+    Route::get('/tasks', [StudentController::class, 'tasks'])->name('tasks');
+    Route::get('/leaderboard', [StudentController::class, 'leaderboard'])->name('leaderboard');
+
+    Route::post('/task/submit', [StudentController::class, 'submitTask'])->name('task.submit');
 });
 
 

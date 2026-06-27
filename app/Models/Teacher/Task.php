@@ -3,7 +3,7 @@
 namespace App\Models\Teacher;
 
 use Illuminate\Database\Eloquent\Model;
-use App\Models\Shared\User;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Task extends Model
