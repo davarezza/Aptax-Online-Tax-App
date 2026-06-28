@@ -11,6 +11,7 @@ class SubmissionFeedback extends Model
 {
     use HasFactory;
 
+    protected $table = 'submission_feedbacks';
     protected $fillable = ['submission_id', 'sender_id', 'message', 'is_read'];
 
     public function submission()

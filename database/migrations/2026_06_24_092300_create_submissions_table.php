@@ -16,9 +16,9 @@ return new class extends Migration
             $table->foreignId('task_id')->constrained('tasks')->onDelete('cascade');
             $table->foreignId('student_id')->constrained('users')->onDelete('cascade');
             $table->text('student_answer');
-            $table->integer('ai_score');
-            $table->text('ai_feedback');
-            $table->enum('status', ['pending', 'reviewed'])->default('pending');
+            $table->integer('ai_score')->nullable();
+            $table->text('ai_feedback')->nullable();
+            $table->enum('status', ['active', 'evaluation'])->default('active');
             $table->timestamps();
         });
     }

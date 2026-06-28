@@ -23,8 +23,13 @@ class User extends Authenticatable
         'completed_modules',
     ];
 
+    protected $attributes = [
+        'completed_modules' => '[]',
+    ];
+
     protected $casts = [
         'completed_modules' => 'array',
+        'completed_tasks' => 'array',
     ];
 
     protected $hidden = [
