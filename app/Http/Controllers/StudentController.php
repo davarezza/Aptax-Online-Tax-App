@@ -9,47 +9,6 @@ use Illuminate\Support\Facades\Auth;
 
 class StudentController extends Controller
 {
-    /**
-     * Helper privat untuk mengemas data autentikasi siswa global
-     */
-    private function shareStudentData()
-    {
-        $user = Auth::user();
-        $classroom = $user->studentClass;
-        $stats = $user->level_stats;
-
-        $latestTask = null;
-        if ($classroom) {
-            $latestTask = Task::where('class_id', $classroom->id)
-                ->where('is_released', 1)
-                ->latest()
-                ->first();
-        }
-
-        return [
-            'auth' => [
-                'user' => [
-                    'id' => $user->id,
-                    'name' => $user->name,
-                    'email' => $user->email,
-                    'class_name' => $classroom ? $classroom->class_name : 'Belum Masuk Kelas',
-                    'level' => $stats['current_level'],
-                    'total_xp' => $stats['total_xp'],
-                    'xp_progress' => $stats['xp_progress'],
-                    'xp_for_next' => $stats['xp_for_next'],
-                ]
-            ],
-            'latestTask' => $latestTask ? [
-                'id' => $latestTask->id,
-                'title' => $latestTask->title,
-                'description' => $latestTask->description,
-                'difficulty' => $latestTask->difficulty,
-                'tax_topic' => $latestTask->tax_topic,
-                'correct_answer' => $latestTask->correct_answer,
-                'xp_reward' => $latestTask->xp_reward,
-            ] : null
-        ];
-    }
 
     public function submitTask(Request $request)
     {
@@ -88,21 +47,32 @@ class StudentController extends Controller
 
     public function home()
     {
-        return Inertia::render('Student/Home', $this->shareStudentData());
-    }
+        $user = Auth::user();
+        $classroom = $user->studentClass;
 
-    public function learn()
-    {
-        return Inertia::render('Student/Learn', $this->shareStudentData());
+        $latestTask = null;
+        if ($classroom) {
+            $latestTask = Task::where('class_id', $classroom->id)
+                ->where('is_released', 1)
+                ->latest()
+                ->first();
+        }
+
+        return Inertia::render('Student/Home', [
+            'latestTask' => $latestTask ? [
+                'id' => $latestTask->id,
+                'title' => $latestTask->title,
+                'description' => $latestTask->description,
+                'difficulty' => $latestTask->difficulty,
+                'tax_topic' => $latestTask->tax_topic,
+                'correct_answer' => $latestTask->correct_answer,
+                'xp_reward' => $latestTask->xp_reward,
+            ] : null
+        ]);
     }
 
     public function tasks()
     {
-        return Inertia::render('Student/Tasks', $this->shareStudentData());
-    }
-
-    public function leaderboard()
-    {
-        return Inertia::render('Student/Leaderboard', $this->shareStudentData());
+        return Inertia::render('Student/Tasks');
     }
 }

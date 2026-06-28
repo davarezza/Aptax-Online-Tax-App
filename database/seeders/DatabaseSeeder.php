@@ -13,16 +13,13 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // 1. BERSIHKAN DATA LAMA SECARA BERURUTAN
-        DB::statement('SET FOREIGN_KEY_CHECKS = 0;');
+        DB::statement('SET FOREIGN_KEY_CHECKS=0;');
         DB::table('class_students')->truncate();
         DB::table('admin_access_tokens')->truncate();
         DB::table('classes')->truncate();
         DB::table('users')->truncate();
-        DB::statement('SET FOREIGN_KEY_CHECKS = 1;');
+        DB::statement('SET FOREIGN_KEY_CHECKS=1;');
 
-        // 2. SEED AKUN DUMMY AWAL
-        // Buat Akun Guru Dummy (Bu Wahyu)
         $teacherId = DB::table('users')->insertGetId([
             'name'              => 'Bu Wahyu, S.Pd.',
             'email'             => 'guru@gmail.com',
@@ -34,61 +31,84 @@ class DatabaseSeeder extends Seeder
             'updated_at'        => now(),
         ]);
 
-        // Buat Akun Siswa Dummy (Muhammad Dava Al Rezza)
-        $studentId = DB::table('users')->insertGetId([
-            'name'              => 'Muhammad Dava Al Rezza',
-            'email'             => 'siswa@gmail.com',
-            'password'          => Hash::make('password'),
-            'role'              => 'siswa',
-            'total_exp'         => 120,
-            'email_verified_at' => now(),
-            'created_at'        => now(),
-            'updated_at'        => now(),
-        ]);
+        $students = [
+            [
+                'name' => 'Muhammad Dava Al Rezza',
+                'email' => 'dava@gmail.com',
+                'exp' => 120,
+            ],
+            [
+                'name' => 'Ilham Ambon',
+                'email' => 'ilham@gmail.com',
+                'exp' => 80,
+            ],
+            [
+                'name' => 'Rizky Pratama',
+                'email' => 'rizky@gmail.com',
+                'exp' => 65,
+            ],
+            [
+                'name' => 'Fajar Ramadhan',
+                'email' => 'fajar@gmail.com',
+                'exp' => 40,
+            ],
+        ];
 
-        // ── 3. SEED TABEL CLASSES (Data Kelas Master) ──
-        // Kelas 1 otomatis langsung terikat ke ID Guru Bu Wahyu
         $class1Id = DB::table('classes')->insertGetId([
             'teacher_id' => $teacherId,
-            'class_name' => 'XI Akuntansi dan Keuangan Lembaga 1',
+            'class_name' => 'XI Akuntansi dan Keuangan 1',
             'class_code' => 'AKL-XI-01',
             'created_at' => now(),
             'updated_at' => now(),
         ]);
 
-        // Kelas 2 kita set teacher_id bernilai null (kosong), sehingga lolos validasi DB
         $class2Id = DB::table('classes')->insertGetId([
-            'teacher_id' => null, // NULL artinya kelas ini siap menunggu guru baru daftar
-            'class_name' => 'XI Akuntansi dan Keuangan Lembaga 2',
+            'teacher_id' => null,
+            'class_name' => 'XI Akuntansi dan Keuangan 2',
             'class_code' => 'AKL-XI-02',
             'created_at' => now(),
             'updated_at' => now(),
         ]);
 
-        // ── 4. SEED TABEL JEMBATAN CLASS_STUDENTS ──
-        // Hubungkan Siswa Dummy langsung otomatis masuk ke Kelas 1 (XI AKL 1)
-        DB::table('class_students')->insert([
-            'class_id'   => $class1Id,
-            'student_id' => $studentId,
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
+        $classStudents = [];
 
-        // ── 5. SEED TABEL ADMIN_ACCESS_TOKENS ──
-        DB::table('admin_access_tokens')->insert([
-            [
-                'token_code' => 'TEACH-AKL2-ABC', // Token untuk guru baru klaim Kelas 2
-                'class_id'   => $class2Id,
-                'is_used'    => 0,
+        foreach ($students as $student) {
+
+            $studentId = DB::table('users')->insertGetId([
+                'name'              => $student['name'],
+                'email'             => $student['email'],
+                'password'          => Hash::make('password'),
+                'role'              => 'siswa',
+                'total_exp'         => $student['exp'],
+                'email_verified_at' => now(),
+                'created_at'        => now(),
+                'updated_at'        => now(),
+            ]);
+
+            $classStudents[] = [
+                'class_id'   => $class1Id,
+                'student_id' => $studentId,
                 'created_at' => now(),
                 'updated_at' => now(),
-            ]
-        ]);
+            ];
+        }
+        DB::table('class_students')->insert($classStudents);
 
-        $this->command->info('Database seeding sukses tanpa eror constraint!');
+        DB::table('admin_access_tokens')->insert([
+            [
+                'token_code' => 'TEACH-AKL2-ABC',
+                'class_id'   => $class2Id,
+                'is_used'    => false,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+        ]);
 
         $this->call([
             TaskSeeder::class,
+            ModuleSeeder::class,
         ]);
+
+        $this->command->info('Database seeding sukses tanpa error constraint!');
     }
 }

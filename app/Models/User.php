@@ -20,6 +20,11 @@ class User extends Authenticatable
         'password',
         'role',
         'total_exp',
+        'completed_modules',
+    ];
+
+    protected $casts = [
+        'completed_modules' => 'array',
     ];
 
     protected $hidden = [

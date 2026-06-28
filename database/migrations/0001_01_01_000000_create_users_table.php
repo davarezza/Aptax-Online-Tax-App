@@ -19,6 +19,7 @@ return new class extends Migration
             $table->string('password');
             $table->enum('role', ['admin', 'guru', 'siswa']);
             $table->integer('total_exp')->default(0);
+            $table->json('completed_modules')->nullable();
             $table->rememberToken();
             $table->timestamps();
         });
