@@ -9,6 +9,6 @@ class TeacherController extends Controller
 {
     public function dashboard()
     {
-        return Inertia::render('Student/Home');
+        return Inertia::render('Teacher/Dashboard');
     }
 }

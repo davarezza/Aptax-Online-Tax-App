@@ -1,5 +1,3 @@
-import { useState } from 'react';
-import { Link } from '@inertiajs/react';
 import AppLayout from '@/Components/AppLayout';
 import TeacherHeader from '@/Components/Teacher/Header';
 import TeacherBottomNav from '@/Components/Teacher/BottomNav';

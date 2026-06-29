@@ -43,13 +43,13 @@ class DatabaseSeeder extends Seeder
                 'exp' => 80,
             ],
             [
-                'name' => 'Rizky Pratama',
-                'email' => 'rizky@gmail.com',
+                'name' => 'Mas Habib Asli Malang',
+                'email' => 'habib@gmail.com',
                 'exp' => 65,
             ],
             [
-                'name' => 'Fajar Ramadhan',
-                'email' => 'fajar@gmail.com',
+                'name' => 'Putri Udah Itu Aja',
+                'email' => 'putri@gmail.com',
                 'exp' => 40,
             ],
         ];
