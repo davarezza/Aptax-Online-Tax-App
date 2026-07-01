@@ -1,8 +1,10 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { usePage, router } from '@inertiajs/react';
 import AppLayout from '@/Components/AppLayout';
 import TeacherHeader from '@/Components/Teacher/Header';
 import TeacherBottomNav from '@/Components/Teacher/BottomNav';
 import ManualForm from '@/Components/Teacher/ManualForm';
+import QuestionDetailModal from '@/Components/Teacher/QuestionDetailModal';
 
 const TAX_TOPICS = [
     'PPh 21 (Income Tax)',
@@ -13,71 +15,65 @@ const TAX_TOPICS = [
     'Bes Meterai (Stamp Duty)',
 ];
 
-const TOPIC_TAGS = {
-    'PPh 21 (Income Tax)': 'PPh 21',
-    'PPh 23 (Withholding Tax)': 'PPh 23',
-    'PPh 25 (Corporate Tax)': 'PPh 25',
-    'PPN (Value Added Tax)': 'PPN',
-    'PPnBM (Luxury Goods Tax)': 'PPnBM',
-    'Bes Meterai (Stamp Duty)': 'Meterai',
-};
-
-const AI_DRAFTS = {
-    'PPh 21 (Income Tax)': { title: "Budi's Freelance Gig", desc: 'Hitung PPh 21 atas penghasilan freelance Budi selama satu bulan.' },
-    'PPN (Value Added Tax)': { title: 'Tech Startup VAT Exemption', desc: 'Studi kasus PPN Jasa teknologi startup.' },
-    'PPh 23 (Withholding Tax)': { title: 'Coffee Shop Dividend', desc: 'PPh 23 atas dividen pembagian pemegang saham PT Kopi.' }
-};
-
-const INITIAL_BANK = [
-    { id: 1, title: "Budi's Freelance Gig", tag: 'PPh 21', diff: 2, source: 'AI', released: true, age: '2h ago' },
-    { id: 2, title: 'Tech Startup VAT Exemption', tag: 'PPN', diff: 3, source: 'AI', released: false, age: '1d ago' },
-    { id: 3, title: 'Coffee Shop Dividend', tag: 'PPh 23', diff: 1, source: 'Manual', released: true }
-];
-
 export default function TeacherMaker() {
+    const { tasksBank } = usePage().props;
+
     const [mode, setMode] = useState('main');
     const [topic, setTopic] = useState(TAX_TOPICS[0]);
     const [difficulty, setDiff] = useState('Intermediate');
-    const [bank, setBank] = useState(INITIAL_BANK);
+    const [bank, setBank] = useState([]);
     const [generating, setGenerating] = useState(false);
     const [filterOpen, setFilterOpen] = useState(false);
     const [filterSource, setFilterSource] = useState('All');
 
-    const handleToggleRelease = (id) => {
-        setBank(prev => prev.map(q => q.id === id ? { ...q, released: !q.released } : q));
+    // State untuk kontrol Modal Detail Soal
+    const [selectedTask, setSelectedTask] = useState(null);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+
+    const [deadline, setDeadline] = useState(
+        new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().slice(0, 16)
+    );
+
+    useEffect(() => {
+        if (tasksBank) {
+            setBank(tasksBank);
+        }
+    }, [tasksBank]);
+
+    const handleToggleRelease = (id, currentStatus) => {
+        const message = currentStatus
+            ? "Apakah Anda yakin ingin membatalkan rilis soal ini untuk siswa?"
+            : "Apakah Anda yakin ingin merilis soal ini agar dapat diakses oleh semua siswa?";
+
+        if (confirm(message)) {
+            router.post(route('teacher.maker.toggleRelease', id), {}, {
+                preserveScroll: true,
+                onSuccess: () => {
+                    // Perbarui data modal jika sedang terbuka sewaktu toggle ditekan
+                    if (selectedTask && selectedTask.id === id) {
+                        setSelectedTask(prev => ({ ...prev, released: !currentStatus }));
+                    }
+                }
+            });
+        }
     };
 
     const handleGenerateAI = () => {
         setGenerating(true);
-        setTimeout(() => {
-            const template = AI_DRAFTS[topic] || AI_DRAFTS['PPh 21 (Income Tax)'];
-            const starMap = { Beginner: 1, Intermediate: 2, Advanced: 3 };
-
-            const newAiQuestion = {
-                id: Date.now(),
-                title: `${template.title} (${difficulty})`,
-                tag: TOPIC_TAGS[topic] || 'PPh 21',
-                diff: starMap[difficulty] || 2,
-                source: 'AI',
-                released: false,
-                age: 'just now'
-            };
-            setBank([newAiQuestion, ...bank]);
-            setGenerating(false);
-        }, 1000);
+        router.post(route('teacher.maker.generateAi'), {
+            tax_topic: topic,
+            difficulty: difficulty,
+            deadline: deadline
+        }, {
+            preserveScroll: true,
+            onFinish: () => setGenerating(false)
+        });
     };
 
-    const handleSaveManualEntry = (formData) => {
-        const newManualQuestion = {
-            id: Date.now(),
-            title: formData.title,
-            tag: TOPIC_TAGS[formData.topic] || 'PPh 21',
-            diff: 2,
-            source: 'Manual',
-            released: false
-        };
-        setBank([newManualQuestion, ...bank]);
-        setMode('main');
+    // Fungsi membuka modal detail
+    const openDetailModal = (taskItem) => {
+        setSelectedTask(taskItem);
+        setIsModalOpen(true);
     };
 
     const filteredBank = filterSource === 'All' ? bank : bank.filter(i => i.source === filterSource);
@@ -87,17 +83,17 @@ export default function TeacherMaker() {
         'PPh 23': 'bg-purple-100 text-purple-700',
         'PPh 25': 'bg-indigo-100 text-indigo-700',
         'PPN': 'bg-emerald-100 text-emerald-700',
-        'PPnBM': 'bg-rose-100 text-rose-700'
+        'PPnBM': 'bg-rose-100 text-rose-700',
+        'Meterai': 'bg-amber-100 text-amber-700'
     };
 
     return (
         <AppLayout>
-            <TeacherHeader teacherName="Mr. Davis" teacherRole="Guru Perpajakan" initials="D" isOnline />
+            <TeacherHeader teacherName="Afifah Afifatul, S.Pd." teacherRole="Guru Perpajakan" initials="A" isOnline />
             <div className="pb-28 pt-3 flex-1 overflow-y-auto">
                 {mode === 'manual' ? (
                     <ManualForm
                         taxTopics={TAX_TOPICS}
-                        onSave={handleSaveManualEntry}
                         onBack={() => setMode('main')}
                     />
                 ) : (
@@ -123,20 +119,33 @@ export default function TeacherMaker() {
                                 </div>
                             </div>
 
-                            <div>
-                                <label className="block text-xs font-bold text-gray-500 mb-2">Difficulty Level</label>
-                                <div className="grid grid-cols-3 gap-2">
-                                    {['Beginner', 'Intermediate', 'Advanced'].map(d => (
-                                        <button key={d} onClick={() => setDiff(d)} className={`py-2.5 text-xs font-bold rounded-xl border transition-all ${difficulty === d ? 'bg-[#1A6B3C] text-white border-[#1A6B3C] shadow-sm' : 'bg-white text-gray-500 border-gray-200'}`}>
-                                            {d}
-                                        </button>
-                                    ))}
+                            {/* BARIS DIUPGRADE: Dipisah per elemen vertikal agar longgar & scannable */}
+                            <div className="space-y-3">
+                                <div>
+                                    <label className="block text-xs font-bold text-gray-500 mb-2">Difficulty Level</label>
+                                    <div className="grid grid-cols-3 gap-2">
+                                        {['Beginner', 'Intermediate', 'Advanced'].map(d => (
+                                            <button type="button" key={d} onClick={() => setDiff(d)} className={`py-2.5 text-[11px] font-bold rounded-xl border transition-all ${difficulty === d ? 'bg-[#1A6B3C] text-white border-[#1A6B3C] shadow-sm' : 'bg-white text-gray-500 border-gray-200'}`}>
+                                                {d}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label className="block text-xs font-bold text-gray-500 mb-1.5">Set Task Deadline</label>
+                                    <input
+                                        type="datetime-local"
+                                        value={deadline}
+                                        onChange={e => setDeadline(e.target.value)}
+                                        className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-xs text-gray-800 bg-white focus:outline-none focus:border-[#1A6B3C] transition-colors"
+                                    />
                                 </div>
                             </div>
 
                             <div className="bg-[#1A6B3C] rounded-2xl p-4 relative overflow-hidden">
                                 <p className="text-white font-extrabold text-base mb-0.5">Ready to generate?</p>
-                                <p className="text-white/70 text-xs mb-4 leading-relaxed">Our AI will create a unique, gamified scenario complete with calculations and multiple-choice answers.</p>
+                                <p className="text-white/70 text-xs mb-4 leading-relaxed">Our AI will create a unique, gamified scenario complete with calculations and smart validation.</p>
 
                                 <div className="space-y-2">
                                     <button
@@ -187,47 +196,71 @@ export default function TeacherMaker() {
                             </div>
 
                             <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden divide-y divide-gray-50">
-                                <div className="grid grid-cols-[1fr_auto_auto_auto] gap-3 px-4 py-2.5 bg-gray-50 text-[10px] font-bold text-gray-400 uppercase tracking-wide">
+                                {/* UPGRADE GRID TEMPLATE: Mengalokasikan ruang untuk kolom Aksi Detail */}
+                                <div className="grid grid-cols-[1fr_auto_auto_auto_auto] gap-2 px-4 py-2.5 bg-gray-50 text-[10px] font-bold text-gray-400 uppercase tracking-wide items-center">
                                     <span>Scenario Title</span>
                                     <span className="w-14 text-center">Topic</span>
-                                    <span className="w-12 text-center">Diff.</span>
+                                    <span className="w-10 text-center">Diff.</span>
                                     <span className="w-12 text-center">Release</span>
+                                    <span className="w-12 text-center">Aksi</span>
                                 </div>
 
-                                {filteredBank.map(item => (
-                                    <div key={item.id} className="grid grid-cols-[1fr_auto_auto_auto] gap-3 items-center px-4 py-3.5">
-                                        <div className="min-w-0">
-                                            <p className="text-xs font-bold text-gray-800 truncate">{item.title}</p>
-                                            <p className={`text-[9px] font-bold mt-0.5 ${item.source === 'AI' ? 'text-blue-400' : 'text-amber-500'}`}>
-                                                {item.source === 'AI' ? `Generated ${item.age || ''} by AI` : 'Manual Entry'}
-                                            </p>
-                                        </div>
+                                {filteredBank.length === 0 ? (
+                                    <div className="text-center py-8 text-xs text-gray-400">Belum ada daftar kasus soal.</div>
+                                ) : (
+                                    filteredBank.map(item => (
+                                        <div key={item.id} className="grid grid-cols-[1fr_auto_auto_auto_auto] gap-2 items-center px-4 py-3.5">
+                                            <div className="min-w-0">
+                                                <p className="text-xs font-bold text-gray-800 truncate">{item.title}</p>
+                                                <p className={`text-[9px] font-bold mt-0.5 ${item.source === 'AI' ? 'text-blue-400' : 'text-amber-500'}`}>
+                                                    {item.source === 'AI' ? `Generated ${item.age || ''} by AI` : 'Manual Entry'}
+                                                </p>
+                                            </div>
 
-                                        <div className="w-14 flex justify-center">
-                                            <span className={`text-[9px] font-black px-2 py-0.5 rounded-lg ${tagColors[item.tag] || 'bg-gray-100'}`}>
-                                                {item.tag}
-                                            </span>
-                                        </div>
+                                            <div className="w-14 flex justify-center">
+                                                <span className={`text-[9px] font-black px-2 py-0.5 rounded-lg ${tagColors[item.tag] || 'bg-gray-100'}`}>
+                                                    {item.tag}
+                                                </span>
+                                            </div>
 
-                                        <div className="w-12 flex justify-center text-amber-400 text-xs">
-                                            {['★', '★★', '★★★'][item.diff - 1] || '★'}
-                                        </div>
+                                            <div className="w-10 flex justify-center text-amber-400 text-xs tracking-tighter">
+                                                {['★', '★★', '★★★'][item.diff - 1] || '★'}
+                                            </div>
 
-                                        <div className="w-12 flex justify-center">
-                                            <button
-                                                onClick={() => handleToggleRelease(item.id)}
-                                                className={`relative w-10 h-5.5 rounded-full p-0.5 flex transition-colors ${item.released ? 'bg-[#1A6B3C] justify-end' : 'bg-gray-200 justify-start'}`}
-                                            >
-                                                <div className="w-4 h-4 rounded-full bg-white shadow-xs flex items-center justify-center text-[7px] text-emerald-700 font-bold">{item.released && "✓"}</div>
-                                            </button>
+                                            <div className="w-12 flex justify-center">
+                                                <button
+                                                    onClick={() => handleToggleRelease(item.id, item.released)}
+                                                    className={`relative w-10 h-5.5 rounded-full p-0.5 flex transition-colors ${item.released ? 'bg-[#1A6B3C] justify-end' : 'bg-gray-200 justify-start'}`}
+                                                >
+                                                    <div className="w-4 h-4 rounded-full bg-white shadow-xs flex items-center justify-center text-[7px] text-emerald-700 font-bold">{item.released && "✓"}</div>
+                                                </button>
+                                            </div>
+
+                                            {/* KOLOM AKSI DETAIL BARU */}
+                                            <div className="w-12 flex justify-center">
+                                                <button
+                                                    type="button"
+                                                    onClick={() => openDetailModal(item)}
+                                                    className="text-[10px] font-extrabold px-2 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-colors shadow-2xs"
+                                                >
+                                                    👁 Lihat
+                                                </button>
+                                            </div>
                                         </div>
-                                    </div>
-                                ))}
+                                    ))
+                                )}
                             </div>
                         </div>
                     </>
                 )}
             </div>
+
+            {/* Modal Detail Modular Container */}
+            <QuestionDetailModal
+                isOpen={isModalOpen}
+                onClose={() => { setIsModalOpen(false); setSelectedTask(null); }}
+                task={selectedTask}
+            />
 
             <TeacherBottomNav active="maker" />
         </AppLayout>

@@ -7,6 +7,7 @@ use App\Http\Controllers\Student\LeaderboardController;
 use App\Http\Controllers\Student\ModuleController;
 use App\Http\Controllers\Student\TaskController;
 use App\Http\Controllers\StudentController;
+use App\Http\Controllers\Teacher\MakerController;
 use App\Http\Controllers\Teacher\TeacherClassController;
 use App\Http\Controllers\TeacherController;
 
@@ -40,12 +41,18 @@ Route::middleware(['auth'])->prefix('student')->name('student.')->group(function
 
 Route::prefix('teacher')->name('teacher.')->group(function () {
     Route::get('/dashboard', [TeacherController::class, 'dashboard'])->name('dashboard');
-    Route::get('/maker', fn() => Inertia::render('Teacher/Maker'))->name('maker');
+
+    Route::get('/maker', [MakerController::class, 'index'])->name('maker');
+    Route::post('/maker/generate-ai', [MakerController::class, 'generateAiCase'])->name('maker.generateAi');
+    Route::post('/maker/store-manual', [MakerController::class, 'storeManualCase'])->name('maker.storeManual');
+    Route::post('/maker/{task}/toggle-release', [MakerController::class, 'toggleRelease'])->name('maker.toggleRelease');
+
     Route::get('/class', [TeacherClassController::class, 'index'])
         ->name('class');
     Route::get('/class/student/{studentId}', [TeacherClassController::class, 'showStudentDetail'])
         ->name('class.student');
     Route::post('/class/message/{submissionId}', [TeacherClassController::class, 'storeTeacherMessage'])
         ->name('class.message');
+
     Route::get('/analytics', fn() => Inertia::render('Teacher/Analytics'))->name('analytics');
 });
