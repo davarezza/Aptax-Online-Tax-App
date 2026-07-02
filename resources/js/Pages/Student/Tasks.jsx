@@ -17,10 +17,9 @@ export default function StudentTasks({ activeTasks = [], evaluationTasks = [], c
 
     return (
         <AppLayout>
-            <StudentHeader notifCount={1} streakDays={3} userName={currentUser?.name?.[0] ?? 'S'} />
+            <StudentHeader />
 
             <div className="flex-1 flex flex-col bg-[#F8FAFC]">
-
                 <div className="px-5 pt-4 pb-2 shrink-0">
                     <h2 className="text-xl font-black text-[#0F172A]">My Tasks</h2>
                     <p className="text-xs text-gray-500 mt-0.5">
@@ -50,8 +49,6 @@ export default function StudentTasks({ activeTasks = [], evaluationTasks = [], c
                 </div>
 
                 <div className="flex-1 overflow-y-auto px-4 pb-24 pt-2 space-y-3">
-
-                    {/* ── TAB: ACTIVE ── */}
                     {activeTab === 'active' && (
                         <>
                             {activeTasks.length === 0 && (
@@ -131,7 +128,6 @@ export default function StudentTasks({ activeTasks = [], evaluationTasks = [], c
                                 </div>
                             ))}
 
-                            {/* Completed preview */}
                             {evaluationTasks.length > 0 && (
                                 <>
                                     <div className="flex items-center my-4 shrink-0">
@@ -160,7 +156,6 @@ export default function StudentTasks({ activeTasks = [], evaluationTasks = [], c
                         </>
                     )}
 
-                    {/* ── TAB: EVALUATION ── */}
                     {activeTab === 'evaluation' && (
                         <>
                             {evaluationTasks.length === 0 && (
@@ -220,7 +215,6 @@ export default function StudentTasks({ activeTasks = [], evaluationTasks = [], c
             </div>
 
             <StudentBottomNav active="tasks" />
-
             {selectedActiveTask && (
                 <AnswerModal
                     task={selectedActiveTask}

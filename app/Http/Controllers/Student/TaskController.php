@@ -25,7 +25,6 @@ class TaskController extends Controller
         $submittedTaskIds = Submission::where('student_id', $studentId)
             ->pluck('task_id');
 
-        // ── ACTIVE TASKS (termasuk yang sudah lewat deadline tapi belum dikerjakan) ──
         $activeTasks = Task::whereIn('class_id', $classIds)
             ->where('is_released', true)
             ->whereNotIn('id', $submittedTaskIds)
@@ -40,7 +39,6 @@ class TaskController extends Controller
                     'difficulty'       => $task->difficulty,
                     'tax_topic'        => $task->tax_topic,
                     'xp_reward'        => $task->xp_reward,
-                    // XP yang akan diterima jika dikerjakan terlambat (50%)
                     'xp_reward_late'   => (int) round($task->xp_reward * 0.5),
                     'deadline'         => $task->deadline,
                     'is_late'          => $isLate,
@@ -106,8 +104,6 @@ class TaskController extends Controller
         }
 
         $isPastDeadline = now()->greaterThan($task->deadline);
-
-        // ── Hitung skor kemiripan ──
         $studentAnswer = strtolower(trim($request->student_answer));
         $correctAnswer = strtolower(trim($task->correct_answer));
         $cleanStudent  = preg_replace('/[^0-9]/', '', $studentAnswer);
@@ -125,18 +121,15 @@ class TaskController extends Controller
                 $errorPercent <= 15 => 85,
                 $errorPercent <= 30 => 70,
                 $errorPercent <= 50 => 50,
-                default             => 20,
+                default             => 30,
             };
         } else {
             similar_text($studentAnswer, $correctAnswer, $similarityPercent);
             $aiScore = (int) round($similarityPercent);
         }
 
-        // ── XP proporsional + penalti 50% jika terlambat ──
         $baseXp   = (int) round(($aiScore / 100) * $task->xp_reward);
         $xpEarned = $isPastDeadline ? (int) round($baseXp * 0.5) : $baseXp;
-
-        // ── Penalti poin -20 jika terlambat ──
         $pointPenalty = $isPastDeadline ? 20 : 0;
 
         Submission::create([
@@ -148,12 +141,10 @@ class TaskController extends Controller
             'status'         => 'evaluation',
         ]);
 
-        // Update XP
         DB::table('users')
             ->where('id', $student->id)
             ->increment('total_exp', $xpEarned);
 
-        // Kurangi poin jika terlambat
         if ($pointPenalty > 0) {
             DB::table('users')
                 ->where('id', $student->id)
@@ -191,7 +182,6 @@ class TaskController extends Controller
         return back();
     }
 
-    // ── Helpers ──────────────────────────────────────────────────────────────
 
     private function formatDueLabel(\DateTime|string $deadline): string
     {

@@ -60,22 +60,22 @@ class StudentController extends Controller
     public function submitTask(Request $request)
     {
         $request->validate([
-            'task_id'          => 'required|exists:tasks,id',
-            'submitted_answer' => 'required|string',
+            // FIX: ubah dari 'submitted_answer' → 'student_answer'
+            // agar seragam dengan AnswerModal dan TaskController
+            'task_id'        => 'required|exists:tasks,id',
+            'student_answer' => 'required|string|max:2000',
         ]);
 
         $user = Auth::user();
         $task = Task::findOrFail($request->task_id);
 
-        // Cegah double-submit
         if (Submission::where('task_id', $task->id)->where('student_id', $user->id)->exists()) {
             return back()->with('flash', ['alreadySubmitted' => true]);
         }
 
         $isPastDeadline = now()->greaterThan($task->deadline);
 
-        // ── Hitung skor kemiripan ──
-        $studentAnswer = strtolower(trim($request->submitted_answer));
+        $studentAnswer = strtolower(trim($request->student_answer));
         $correctAnswer = strtolower(trim($task->correct_answer));
         $cleanStudent  = preg_replace('/[^0-9]/', '', $studentAnswer);
         $cleanCorrect  = preg_replace('/[^0-9]/', '', $correctAnswer);
@@ -92,37 +92,30 @@ class StudentController extends Controller
                 $errorPercent <= 15 => 85,
                 $errorPercent <= 30 => 70,
                 $errorPercent <= 50 => 50,
-                default             => 20,
+                default             => 30,
             };
         } else {
             similar_text($studentAnswer, $correctAnswer, $similarityPercent);
             $aiScore = (int) round($similarityPercent);
         }
 
-        // ── Hitung XP dengan penalti deadline jika terlambat ──
-        $baseXp   = (int) round(($aiScore / 100) * $task->xp_reward);
-        $xpEarned = $isPastDeadline ? (int) round($baseXp * 0.5) : $baseXp;
-
-        // ── Penalti poin -20 jika terlambat ──
-        // (poin = kolom terpisah dari XP, sesuaikan nama kolom jika berbeda)
+        $baseXp       = (int) round(($aiScore / 100) * $task->xp_reward);
+        $xpEarned     = $isPastDeadline ? (int) round($baseXp * 0.5) : $baseXp;
         $pointPenalty = $isPastDeadline ? 20 : 0;
 
-        // Simpan submission
         Submission::create([
             'task_id'        => $task->id,
             'student_id'     => $user->id,
-            'student_answer' => $request->submitted_answer,
+            'student_answer' => $request->student_answer,
             'ai_score'       => $aiScore,
             'ai_feedback'    => $this->generateFeedback($aiScore, $task->correct_answer, $task, $isPastDeadline),
             'status'         => 'evaluation',
         ]);
 
-        // Update XP
         DB::table('users')
             ->where('id', $user->id)
             ->increment('total_exp', $xpEarned);
 
-        // Kurangi poin jika terlambat (pastikan tidak minus)
         if ($pointPenalty > 0) {
             DB::table('users')
                 ->where('id', $user->id)
@@ -132,16 +125,14 @@ class StudentController extends Controller
         }
 
         return back()->with('flash', [
-            'isCorrect'       => $aiScore >= 95,
-            'aiScore'         => $aiScore,
-            'xpChange'        => $xpEarned,
-            'pointPenalty'    => $pointPenalty,
-            'isPastDeadline'  => $isPastDeadline,
-            'correctAnswer'   => $task->correct_answer,
+            'isCorrect'      => $aiScore >= 95,
+            'aiScore'        => $aiScore,
+            'xpChange'       => $xpEarned,
+            'pointPenalty'   => $pointPenalty,
+            'isPastDeadline' => $isPastDeadline,
+            'correctAnswer'  => $task->correct_answer,
         ]);
     }
-
-    // ── Helpers ──────────────────────────────────────────────────────────────
 
     private function generateFeedback(int $score, string $correctAnswer, Task $task, bool $isPastDeadline = false): string
     {
