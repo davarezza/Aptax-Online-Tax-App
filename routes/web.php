@@ -7,6 +7,7 @@ use App\Http\Controllers\Student\LeaderboardController;
 use App\Http\Controllers\Student\ModuleController;
 use App\Http\Controllers\Student\TaskController;
 use App\Http\Controllers\StudentController;
+use App\Http\Controllers\Teacher\AnalyticController;
 use App\Http\Controllers\Teacher\MakerController;
 use App\Http\Controllers\Teacher\TeacherClassController;
 use App\Http\Controllers\TeacherController;
@@ -54,5 +55,6 @@ Route::prefix('teacher')->name('teacher.')->group(function () {
     Route::post('/class/message/{submissionId}', [TeacherClassController::class, 'storeTeacherMessage'])
         ->name('class.message');
 
-    Route::get('/analytics', fn() => Inertia::render('Teacher/Analytics'))->name('analytics');
+    Route::get('/analytics', [AnalyticController::class, 'index'])
+        ->name('analytics');
 });
