@@ -57,4 +57,6 @@ Route::prefix('teacher')->name('teacher.')->group(function () {
 
     Route::get('/analytics', [AnalyticController::class, 'index'])
         ->name('analytics');
+    Route::post('/analytics/refresh-diagnostic', [AnalyticController::class, 'refreshDiagnostic'])
+        ->name('analytics.refreshDiagnostic');
 });

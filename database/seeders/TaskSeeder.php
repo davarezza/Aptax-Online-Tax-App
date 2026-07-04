@@ -24,7 +24,7 @@ class TaskSeeder extends Seeder
                 'source_type' => 'manual',
                 'correct_answer' => '250000', // Nilai angka (60jt * 5% / 12 bulan)
                 'xp_reward' => 30,
-                'deadline' => Carbon::now()->addDays(5), // Deadline 5 hari ke depan
+                'deadline' => Carbon::now()->addDays(2), // Deadline 2 hari ke depan
                 'is_released' => 1,
                 'created_at' => Carbon::now(),
                 'updated_at' => Carbon::now(),
@@ -39,7 +39,7 @@ class TaskSeeder extends Seeder
                 'source_type' => 'manual',
                 'correct_answer' => '1200000', // Nilai angka (10jt * 12%)
                 'xp_reward' => 60,
-                'deadline' => Carbon::now()->addDays(7), // Deadline 7 hari ke depan
+                'deadline' => Carbon::now()->addDays(2), // Deadline 2 hari ke depan
                 'is_released' => 1,
                 'created_at' => Carbon::now(),
                 'updated_at' => Carbon::now(),
