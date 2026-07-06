@@ -3,13 +3,11 @@ import React from 'react';
 export default function QuestionDetailModal({ isOpen, onClose, task }) {
     if (!isOpen || !task) return null;
 
-    // Helper untuk memformat angka ke Rupiah
     const formatRupiah = (value) => {
         if (!value) return '0';
         return new Intl.NumberFormat('id-ID').format(value);
     };
 
-    // Helper untuk format tanggal deadline
     const formatDeadline = (dateString) => {
         if (!dateString) return '-';
         try {
@@ -26,8 +24,6 @@ export default function QuestionDetailModal({ isOpen, onClose, task }) {
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-fade-in">
             <div className="bg-white rounded-2xl border border-gray-100 shadow-2xl w-full max-w-lg overflow-hidden flex flex-col max-h-[85vh]">
-
-                {/* Header */}
                 <div className="px-5 py-4 bg-gray-50 border-b border-gray-100 flex items-center justify-between">
                     <div>
                         <span className="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 bg-cyan-100 text-cyan-700 rounded-md mr-2">
@@ -48,7 +44,6 @@ export default function QuestionDetailModal({ isOpen, onClose, task }) {
                     </button>
                 </div>
 
-                {/* Content */}
                 <div className="p-5 overflow-y-auto space-y-4 flex-1">
                     <div>
                         <h3 className="text-base font-extrabold text-gray-900 leading-snug">
@@ -92,7 +87,6 @@ export default function QuestionDetailModal({ isOpen, onClose, task }) {
                     </div>
                 </div>
 
-                {/* Footer */}
                 <div className="px-5 py-3 bg-gray-50 border-t border-gray-100 flex justify-end">
                     <button
                         onClick={onClose}

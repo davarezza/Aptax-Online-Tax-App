@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
 
 class AnalyticController extends Controller
@@ -13,8 +15,6 @@ class AnalyticController extends Controller
     public function index()
     {
         $teacherId = Auth::id();
-
-        // Asumsi: 1 guru mengampu 1 kelas utama (sesuai seed data classes.teacher_id)
         $classId = DB::table('classes')->where('teacher_id', $teacherId)->value('id');
 
         if (! $classId) {
@@ -27,31 +27,201 @@ class AnalyticController extends Controller
             ]);
         }
 
+        $existingAnalytic = DB::table('class_ai_analytics')
+            ->where('class_id', $classId)
+            ->orderBy('analyzed_at', 'desc')
+            ->first();
+
+        if ($existingAnalytic) {
+            $aiDiagnostic = [
+                'executiveSummary' => $existingAnalytic->ai_executive_summary,
+                'struggles'        => json_decode($existingAnalytic->struggle_points_json, true),
+                'actionPlan'       => json_decode($existingAnalytic->action_plan, true),
+                'generatedAt'      => Carbon::parse($existingAnalytic->analyzed_at)->toIso8601String(),
+            ];
+        } else {
+            $aiDiagnostic = $this->getFallbackDiagnostic($classId);
+        }
+
         return Inertia::render('Teacher/Analytics', [
             'classStats'      => $this->getClassStats($classId),
             'topicAnalytics'  => $this->getTopicAnalytics($classId),
             'weeklyProgress'  => $this->getWeeklyProgress($classId),
             'leaderboardData' => $this->getLeaderboard($classId),
-            'aiDiagnostic'    => $this->getAiDiagnostic($classId),
+            'aiDiagnostic'    => $aiDiagnostic,
         ]);
     }
 
-    /**
-     * Endpoint khusus untuk tombol "Analisis dengan AI" — Inertia partial reload
-     * hanya akan menarik ulang prop 'aiDiagnostic' ini (lihat web.php).
-     */
     public function refreshDiagnostic()
     {
         $classId = DB::table('classes')->where('teacher_id', Auth::id())->value('id');
 
+        if (! $classId) {
+            return Inertia::render('Teacher/Analytics', [
+                'aiDiagnostic' => $this->emptyDiagnostic(),
+            ]);
+        }
+
+        $recentAnalytic = DB::table('class_ai_analytics')
+            ->where('class_id', $classId)
+            ->where('analyzed_at', '>=', Carbon::now()->subHours(6))
+            ->orderBy('analyzed_at', 'desc')
+            ->first();
+
+        if ($recentAnalytic) {
+            return redirect()->back();
+        }
+
+        $stats = $this->getClassStats($classId);
+        $topicAnalytics = $this->getTopicAnalytics($classId);
+
+        $inputDataText = "Statistik Progres Kelas Saat Ini:\n"
+            . "- Total XP Akumulasi Seluruh Siswa: {$stats['totalClassXp']} XP\n"
+            . "- Rata-rata Persentase Penyelesaian Tugas: {$stats['avgCompletion']}%\n\n";
+
+        if (empty($topicAnalytics)) {
+            $inputDataText .= "Detail Performa Akurasi: Belum ada data submission bernilai evaluasi yang masuk dari siswa. Kelas baru saja dimulai atau perlu dorongan pengerjaan kuis.\n";
+        } else {
+            $inputDataText .= "Detail Performa Akurasi Siswa per Topik Pajak:\n";
+            foreach ($topicAnalytics as $topic) {
+                $inputDataText .= "- Topik Pajak: {$topic['topic']}, Rata-rata Akurasi: {$topic['pct']}%, Kategori: {$topic['level']}, Jumlah Submit: {$topic['total']}\n";
+            }
+        }
+
+        $systemInstruction = "Anda adalah sistem AI Analitik Pendidikan khusus SMK Akuntansi di aplikasi ApTax. Tugas Anda adalah menganalisis data performa kompetensi siswa dan memberikan laporan diagnosis yang instruktif, solutif, serta menggunakan bahasa motivasi informal (wajib gunakan panggilan 'kamu' kepada guru).";
+        $prompt = "Berdasarkan data kondisi kelas dampinganmu berikut, buatlah analisis evaluasi kualitatif cerdas:\n\n"
+            . $inputDataText . "\n"
+            . "Ketentuan Output Format JSON:\n"
+            . "1. executiveSummary: Berikan paragraf ringkasan evaluasi performa kelas (2-3 kalimat). Jika data performa masih kosong, berikan teks sapaan motivasi kepada guru untuk segera memicu siswa mengerjakan tugas pertama mereka di ApTax.\n"
+            . "2. struggles: Berikan analisis 2-3 topik dengan tingkat akurasi terendah. Jika data performa kelas masih kosong, sebutkan materi fundamental perpajakan (seperti PPh 21 atau PPN) yang berpotensi menjadi titik bingung utama anak SMK berdasarkan asumsi umum. Tentukan nilai 'pct' (tingkat kesulitan, angka integer bebas antara 0-100) dan tulis deskripsi 'text'-nya.\n"
+            . "3. actionPlan: Berikan 3 poin rencana aksi strategis konkret yang bisa guru terapkan di kelas esok hari. Tentukan 'icon' berupa emoji tunggal yang relevan serta deskripsi 'text' instruksinya.";
+
+        $apiKey = env('GEMINI_API_KEY');
+
+        try {
+            $response = Http::withHeaders([
+                'Content-Type' => 'application/json',
+            ])->post("https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={$apiKey}", [
+                'contents' => [
+                    ['parts' => [['text' => $prompt]]]
+                ],
+                'systemInstruction' => [
+                    'parts' => [['text' => $systemInstruction]]
+                ],
+                'generationConfig' => [
+                    'responseMimeType' => 'application/json',
+                    'responseSchema' => [
+                        'type' => 'OBJECT',
+                        'properties' => [
+                            'executiveSummary' => ['type' => 'STRING'],
+                            'struggles' => [
+                                'type' => 'ARRAY',
+                                'items' => [
+                                    'type' => 'OBJECT',
+                                    'properties' => [
+                                        'pct' => ['type' => 'INTEGER'],
+                                        'text' => ['type' => 'STRING']
+                                    ],
+                                    'required' => ['pct', 'text']
+                                ]
+                            ],
+                            'actionPlan' => [
+                                'type' => 'ARRAY',
+                                'items' => [
+                                    'type' => 'OBJECT',
+                                    'properties' => [
+                                        'icon' => ['type' => 'STRING'],
+                                        'text' => ['type' => 'STRING']
+                                    ],
+                                    'required' => ['icon', 'text']
+                                ]
+                            ]
+                        ],
+                        'required' => ['executiveSummary', 'struggles', 'actionPlan']
+                    ]
+                ]
+            ]);
+
+            if ($response->successful()) {
+                $resultData = $response->json();
+                $aiJsonString = $resultData['candidates'][0]['content']['parts'][0]['text'] ?? '{}';
+                $aiData = json_decode($aiJsonString, true);
+
+                DB::table('class_ai_analytics')->insert([
+                    'class_id'             => $classId,
+                    'ai_executive_summary' => $aiData['executiveSummary'] ?? 'Gagal membuat ringkasan.',
+                    'struggle_points_json' => json_encode($aiData['struggles'] ?? []),
+                    'action_plan'          => json_encode($aiData['actionPlan'] ?? []),
+                    'analyzed_at'          => Carbon::now(),
+                    'created_at'           => Carbon::now(),
+                    'updated_at'           => Carbon::now(),
+                ]);
+
+                return redirect()->back();
+            }
+
+            Log::error('Gemini API Error di Objek Response: ' . $response->body());
+        } catch (\Exception $e) {
+            Log::error('Koneksi Gagal/Exception Terdeteksi: ' . $e->getMessage());
+        }
+
         return Inertia::render('Teacher/Analytics', [
-            'aiDiagnostic' => $classId ? $this->getAiDiagnostic($classId) : $this->emptyDiagnostic(),
+            'aiDiagnostic' => $this->getFallbackDiagnostic($classId),
         ]);
     }
 
-    /**
-     * Ringkasan atas: Total XP kelas & rata-rata completion rate.
-     */
+    private function getFallbackDiagnostic(int $classId): array
+    {
+        $topics = collect($this->getTopicAnalytics($classId));
+        $stats  = $this->getClassStats($classId);
+
+        if ($topics->isEmpty()) {
+            return $this->emptyDiagnostic();
+        }
+
+        $bestTopic   = $topics->sortByDesc('pct')->first();
+        $worstTopics = $topics->sortBy('pct')->take(3)->values();
+
+        $executiveSummary = sprintf(
+            'Halo! Berdasarkan rekap data, siswa kelasmu menunjukkan penguasaan materi paling matang pada topik "%s" dengan rata-rata akurasi %d%%. '
+            . 'Namun, fokus bimbingan intensif sangat diperlukan pada materi "%s" karena akurasi rata-rata barunya menyentuh %d%%.',
+            $bestTopic['topic'],
+            $bestTopic['pct'],
+            $worstTopics->first()['topic'],
+            $worstTopics->first()['pct']
+        );
+
+        $struggles = $worstTopics->map(function ($topic) {
+            return [
+                'pct'  => 100 - $topic['pct'],
+                'text' => sprintf('Siswa terindikasi mengalami kendala pemahaman konsep pada kompetensi dasar "%s" (Akurasi kelas: %d%%).', $topic['topic'], $topic['pct']),
+            ];
+        })->toArray();
+
+        $actionPlan = [
+            ['icon' => '💡', 'text' => sprintf('Buka kembali pembahasan materi dasar khusus untuk topik "%s" pada sela jam produktif.', $worstTopics->first()['topic'])],
+            ['icon' => '🎯', 'text' => 'Gunakan fitur AI Case Maker untuk merilis latihan soal berstatus [Beginner] guna memicu kembali kepercayaan diri siswa.'],
+            ['icon' => '📋', 'text' => 'Pantau menu Performa Murid untuk memberikan bimbingan personal via chat kepada siswa di peringkat bawah.'],
+        ];
+
+        return [
+            'executiveSummary' => $executiveSummary,
+            'struggles'        => $struggles,
+            'actionPlan'       => $actionPlan,
+            'generatedAt'      => Carbon::now()->toIso8601String(),
+        ];
+    }
+
+    private function emptyDiagnostic(): array
+    {
+        return [
+            'executiveSummary' => 'Belum ada cukup data submission siswa untuk dievaluasi oleh AI.',
+            'struggles'        => [],
+            'actionPlan'       => [],
+            'generatedAt'      => Carbon::now()->toIso8601String(),
+        ];
+    }
+
     private function getClassStats(int $classId): array
     {
         $totalClassXp = (int) DB::table('class_students')
@@ -91,9 +261,6 @@ class AnalyticController extends Controller
         ];
     }
 
-    /**
-     * Data untuk Bar/Donut Chart: rata-rata ai_score per tax_topic.
-     */
     private function getTopicAnalytics(int $classId): array
     {
         $rows = DB::table('submissions')
@@ -129,9 +296,6 @@ class AnalyticController extends Controller
         })->values()->toArray();
     }
 
-    /**
-     * Data untuk Line/Area Chart: tren jumlah submission per minggu (6 minggu terakhir).
-     */
     private function getWeeklyProgress(int $classId, int $weeksBack = 6): array
     {
         $startDate = Carbon::now()->subWeeks($weeksBack - 1)->startOfWeek();
@@ -164,9 +328,6 @@ class AnalyticController extends Controller
         return $result;
     }
 
-    /**
-     * Leaderboard: siswa di kelas ini, diurutkan total_exp tertinggi ke terendah.
-     */
     private function getLeaderboard(int $classId): array
     {
         $students = DB::table('class_students')
@@ -198,74 +359,5 @@ class AnalyticController extends Controller
             ->implode('');
 
         return $initials ?: 'S';
-    }
-
-    /**
-     * Simulasi respons AI (Executive Summary, Struggle Points, Action Plan)
-     * berdasarkan statistik ai_score & completion rate riil kelas.
-     */
-    private function getAiDiagnostic(int $classId): array
-    {
-        $topics = collect($this->getTopicAnalytics($classId));
-        $stats  = $this->getClassStats($classId);
-
-        if ($topics->isEmpty()) {
-            return $this->emptyDiagnostic();
-        }
-
-        $bestTopic   = $topics->sortByDesc('pct')->first();
-        $worstTopics = $topics->sortBy('pct')->take(4)->values();
-
-        $executiveSummary = sprintf(
-            'Secara keseluruhan, siswa menunjukkan penguasaan terbaik pada topik "%s" (%d%% akurasi). '
-            . 'Namun performa kelas masih tertinggal pada topik "%s" (%d%% akurasi). '
-            . 'Rata-rata tingkat penyelesaian tugas kelas saat ini berada di %d%%, dengan total akumulasi %s XP dari seluruh siswa.',
-            $bestTopic['topic'],
-            $bestTopic['pct'],
-            $worstTopics->first()['topic'],
-            $worstTopics->first()['pct'],
-            $stats['avgCompletion'],
-            number_format($stats['totalClassXp'], 0, ',', '.')
-        );
-
-        $struggles = $worstTopics->map(function ($topic) {
-            return [
-                'pct'  => 100 - $topic['pct'],
-                'text' => sprintf(
-                    'Sebagian besar siswa masih kesulitan pada topik "%s" dengan rata-rata akurasi hanya %d%%. Diperlukan perhatian tambahan pada materi ini.',
-                    $topic['topic'],
-                    $topic['pct']
-                ),
-            ];
-        })->values()->toArray();
-
-        $icons = ['📋', '🎯', '💡', '⏰'];
-        $actionPlan = $worstTopics->map(function ($topic, $index) use ($icons) {
-            return [
-                'icon' => $icons[$index % count($icons)],
-                'text' => sprintf(
-                    'Selenggarakan sesi ulasan atau soal latihan tambahan untuk topik "%s" agar akurasi siswa meningkat dari %d%%.',
-                    $topic['topic'],
-                    $topic['pct']
-                ),
-            ];
-        })->values()->toArray();
-
-        return [
-            'executiveSummary' => $executiveSummary,
-            'struggles'        => $struggles,
-            'actionPlan'       => $actionPlan,
-            'generatedAt'      => Carbon::now()->toIso8601String(),
-        ];
-    }
-
-    private function emptyDiagnostic(): array
-    {
-        return [
-            'executiveSummary' => 'Belum ada cukup data submission untuk menghasilkan analisis AI. Silakan tunggu hingga siswa menyelesaikan beberapa tugas.',
-            'struggles'        => [],
-            'actionPlan'       => [],
-            'generatedAt'      => Carbon::now()->toIso8601String(),
-        ];
     }
 }

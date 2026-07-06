@@ -1,5 +1,5 @@
 export function AiModal({ data, onClose }) {
-    const executiveSummary = data?.executiveSummary ?? 'Belum ada data analisis.';
+    const executiveSummary = data?.executiveSummary ?? 'Menunggu analisis data kelas...';
     const struggles = data?.struggles ?? [];
     const actionPlan = data?.actionPlan ?? [];
 
@@ -35,35 +35,40 @@ export function AiModal({ data, onClose }) {
                         </div>
                     </div>
 
-                    {struggles.length > 0 && (
-                        <div>
-                            <p className="text-xs font-bold text-gray-400 uppercase tracking-wide mb-2">🔍 Student Struggle Points</p>
+                    <div>
+                        <p className="text-xs font-bold text-gray-400 uppercase tracking-wide mb-2">🔍 Student Struggle Points</p>
+                        {struggles.length === 0 ? (
+                            <p className="text-xs text-gray-400 italic pl-1">Semua kompetensi topik terpantau aman oleh AI.</p>
+                        ) : (
                             <div className="space-y-2.5">
                                 {struggles.map((s, i) => (
                                     <div key={i} className="bg-rose-50 border border-rose-100 rounded-2xl p-3.5 flex items-start gap-3">
-                                        <span className="shrink-0 mt-0.5 w-10 text-center text-xs font-extrabold text-rose-600 bg-rose-100 rounded-xl py-1">
-                                            {s.pct}%
+                                        <span className="shrink-0 mt-0.5 w-12 text-center text-[11px] font-extrabold text-rose-600 bg-rose-100 rounded-xl py-1">
+                                            {s.pct}% {/* Menampilkan tingkat kesulitan/kebingungan */}
                                         </span>
                                         <p className="text-sm text-gray-700 leading-relaxed">{s.text}</p>
                                     </div>
                                 ))}
                             </div>
-                        </div>
-                    )}
+                        )}
+                    </div>
 
-                    {actionPlan.length > 0 && (
-                        <div>
-                            <p className="text-xs font-bold text-gray-400 uppercase tracking-wide mb-2">🎯 Personalized Action Plan</p>
+                    <div>
+                        <p className="text-xs font-bold text-gray-400 uppercase tracking-wide mb-2">🎯 Personalized Action Plan</p>
+                        {actionPlan.length === 0 ? (
+                            <p className="text-xs text-gray-400 italic pl-1">Belum ada saran tindakan strategis.</p>
+                        ) : (
                             <div className="space-y-2.5">
                                 {actionPlan.map((a, i) => (
                                     <div key={i} className="bg-emerald-50 border border-emerald-100 rounded-2xl p-3.5 flex items-start gap-3">
-                                        <span className="text-base shrink-0">{a.icon}</span>
+                                        <span className="text-base shrink-0">{a.icon}</span> {/* Mengambil emoji dinamis dari Gemini */}
                                         <p className="text-sm text-gray-700 leading-relaxed">{a.text}</p>
                                     </div>
                                 ))}
                             </div>
-                        </div>
-                    )}
+                        )}
+                    </div>
+
                     <div className="h-2" />
                 </div>
 

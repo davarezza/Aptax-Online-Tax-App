@@ -292,16 +292,19 @@ export default function TeacherAnalytics({ classStats, topicAnalytics, weeklyPro
 
     const handleOpenAI = () => {
         setAiLoading(true);
-        router.reload({
-            only: ['aiDiagnostic'],
+
+        router.post(route('teacher.analytics.refreshDiagnostic'), {}, {
+            preserveScroll: true,
             onSuccess: (page) => {
                 setDiagnosticData(page.props.aiDiagnostic);
                 setAiLoading(false);
                 setAiModal(true);
             },
-            onError: () => {
+            onError: (err) => {
+                console.error("Gagal melakukan analisis AI:", err);
                 setAiLoading(false);
-            },
+                alert("Terjadi kesalahan saat menghubungi Gemini API.");
+            }
         });
     };
 

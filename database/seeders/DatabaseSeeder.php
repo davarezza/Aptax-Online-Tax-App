@@ -21,7 +21,7 @@ class DatabaseSeeder extends Seeder
         DB::statement('SET FOREIGN_KEY_CHECKS=1;');
 
         $teacherId = DB::table('users')->insertGetId([
-            'name'              => 'Bu Wahyu, S.Pd.',
+            'name'              => 'Ela Mitha, S.Pd.',
             'email'             => 'guru@gmail.com',
             'password'          => Hash::make('password'),
             'role'              => 'guru',
