@@ -22,17 +22,6 @@ const links = [
         ),
     },
     {
-        key: 'spt',
-        label: 'Simulasi SPT',
-        href: '/student/spt',
-        isHighlight: true,
-        icon: (className) => (
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className={className}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-            </svg>
-        ),
-    },
-    {
         key: 'tasks',
         label: 'Tasks',
         href: '/student/tasks',
@@ -56,32 +45,9 @@ const links = [
 
 export default function StudentBottomNav({ active = 'home' }) {
     return (
-        <nav className="fixed bottom-0 left-0 right-0 max-w-md w-full mx-auto bg-[#F5F0E8] border-t border-[#E0D8C8] flex items-center justify-between px-1 py-1 z-20">
+        <nav className="fixed bottom-0 left-0 right-0 max-w-md w-full mx-auto bg-[#F5F0E8] border-t border-[#E0D8C8] flex items-center justify-between px-2 py-2 z-20">
             {links.map((l) => {
                 const isActive = active === l.key;
-
-                if (l.isHighlight) {
-                    return (
-                        <Link
-                            key={l.key}
-                            href={l.href}
-                            className="flex-1 flex flex-col items-center justify-center"
-                        >
-                            <div className={`w-10 h-10 rounded-full flex items-center justify-center transition-all duration-200 ${
-                                isActive
-                                    ? 'bg-[#1A6B3C] text-white shadow-sm'
-                                    : 'bg-[#FAA042] text-white'
-                            }`}>
-                                {l.icon('w-5 h-5')}
-                            </div>
-                            <span className={`text-[10px] font-semibold mt-1 transition-colors ${
-                                isActive ? 'text-[#1A6B3C]' : 'text-[#A09880]'
-                            }`}>
-                                {l.label}
-                            </span>
-                        </Link>
-                    );
-                }
 
                 return (
                     <Link
@@ -91,10 +57,11 @@ export default function StudentBottomNav({ active = 'home' }) {
                             isActive ? 'text-[#1A6B3C]' : 'text-[#A09880]'
                         }`}
                     >
-                        <div className="w-10 h-10 flex items-center justify-center">
+                        {/* Wrapper box dipertahankan agar area klik dan alignment tetap konsisten */}
+                        <div className="w-9 h-9 flex items-center justify-center">
                             {l.icon('w-6 h-6')}
                         </div>
-                        <span className="text-[10px] font-semibold">
+                        <span className="text-[11px] font-semibold mt-0.5">
                             {l.label}
                         </span>
                     </Link>

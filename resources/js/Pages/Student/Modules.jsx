@@ -3,7 +3,13 @@ import AppLayout from '@/Components/AppLayout';
 import StudentHeader from '@/Components/Student/Header';
 import StudentBottomNav from '@/Components/Student/BottomNav';
 
-function ModuleCard({ id, title, description, progress, isLocked, onClick }) {
+function ModuleCard({ id, title, description, progress, isLocked, pdfUrl, onClick }) {
+    const handleDownload = (e) => {
+        e.stopPropagation();
+        if (pdfUrl) {
+            window.open(pdfUrl, '_blank');
+        }
+    };
     return (
         <div
             onClick={!isLocked ? onClick : undefined}
@@ -25,6 +31,14 @@ function ModuleCard({ id, title, description, progress, isLocked, onClick }) {
                             <span className="text-[10px] font-bold text-amber-600 bg-amber-50 px-2 py-0.5 rounded-md">
                                 🎉 Selesai
                             </span>
+                        )}
+                        {!isLocked && pdfUrl && (
+                            <button
+                                onClick={handleDownload}
+                                className="text-[10px] font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-md hover:bg-blue-100 transition-all flex items-center gap-1 integration-download-btn"
+                            >
+                                📥 Lihat PDF
+                            </button>
                         )}
                     </div>
                     <h3 className={`text-sm font-bold ${isLocked ? 'text-gray-400' : 'text-gray-800'}`}>
@@ -130,6 +144,7 @@ export default function StudentModules() {
                             description={mod.content}
                             progress={mod.progress}
                             isLocked={mod.isLocked}
+                            pdfUrl={mod.pdf_url}
                             onClick={() => handleModuleClick(mod.id)}
                         />
                     ))}

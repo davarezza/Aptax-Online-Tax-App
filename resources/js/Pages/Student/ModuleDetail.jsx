@@ -23,26 +23,43 @@ export default function ModuleDetail() {
         router.visit(route('student.modules'));
     };
 
+    const handleDownloadPdf = () => {
+        if (module.pdf_url) {
+            window.open(module.pdf_url, '_blank');
+        }
+    };
+
     return (
         <AppLayout>
             <StudentHeader />
-            <div className="px-4 pt-4 pb-2 flex items-center gap-3 border-b border-gray-100 bg-white sticky top-0 z-10">
-                <button
-                    onClick={handleBack}
-                    className="w-8 h-8 rounded-xl bg-gray-100 flex items-center justify-center text-gray-600 hover:bg-gray-200 transition-all"
-                >
-                    ←
-                </button>
-                <div className="flex-1 min-w-0">
-                    <p className="text-[10px] font-bold text-[#1A6B3C] uppercase tracking-wider">Modul Pembelajaran</p>
-                    <h1 className="text-sm font-black text-gray-800 truncate">{module.title}</h1>
+                <div className="px-4 pt-4 pb-2 flex items-center gap-3 border-b border-gray-100 bg-white sticky top-0 z-10">
+                    <button
+                        onClick={handleBack}
+                        className="w-8 h-8 rounded-xl bg-gray-100 flex items-center justify-center text-gray-600 hover:bg-gray-200 transition-all"
+                    >
+                        ←
+                    </button>
+                    <div className="flex-1 min-w-0">
+                        <p className="text-[10px] font-bold text-[#1A6B3C] uppercase tracking-wider">Modul Pembelajaran</p>
+                        <h1 className="text-sm font-black text-gray-800 truncate">{module.title}</h1>
+                    </div>
+
+                    {module.pdf_url && (
+                        <button
+                            onClick={handleDownloadPdf}
+                            className="p-2 rounded-xl bg-blue-50 text-blue-600 hover:bg-blue-100 transition-all text-xs font-bold flex items-center gap-1"
+                            title="Lihat PDF"
+                        >
+                            📥 <span className="hidden sm:inline">Lihat PDF</span>
+                        </button>
+                    )}
+
+                    {isCompleted && (
+                        <span className="text-[10px] font-bold text-amber-600 bg-amber-50 px-2 py-1 rounded-lg shrink-0">
+                            🎉 Selesai
+                        </span>
+                    )}
                 </div>
-                {isCompleted && (
-                    <span className="text-[10px] font-bold text-amber-600 bg-amber-50 px-2 py-1 rounded-lg shrink-0">
-                        🎉 Selesai
-                    </span>
-                )}
-            </div>
 
             <div className="flex-1 px-4 pt-4 pb-28 overflow-y-auto flex flex-col justify-between">
 

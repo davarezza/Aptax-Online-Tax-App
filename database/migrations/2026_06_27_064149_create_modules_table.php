@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('title');
             $table->text('content');
+            $table->string('pdf_file')->nullable();
             $table->integer('order_position')->default(1);
             $table->timestamps();
         });
