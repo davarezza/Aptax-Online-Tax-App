@@ -1,6 +1,93 @@
 import { useRef, useEffect } from 'react';
 import { useForm } from '@inertiajs/react';
 
+function formatAsRupiah(value) {
+    const trimmed = String(value ?? '').trim();
+    if (trimmed !== '' && /^\d+$/.test(trimmed)) {
+        return 'Rp ' + Number(trimmed).toLocaleString('id-ID');
+    }
+    return value;
+}
+
+function parseInline(text, keyPrefix) {
+    const codeSegments = text.split(/(`[^`]+`)/g);
+
+    return codeSegments.map((segment, segIdx) => {
+        if (segment.startsWith('`') && segment.endsWith('`') && segment.length > 1) {
+            return (
+                <code
+                    key={`${keyPrefix}-code-${segIdx}`}
+                    className="inline-block bg-indigo-100 text-indigo-700 px-1.5 py-0.5 rounded-md font-mono text-[11px] font-bold mx-0.5"
+                >
+                    {segment.slice(1, -1)}
+                </code>
+            );
+        }
+
+        const boldSegments = segment.split(/(\*[^*]+\*)/g);
+        return boldSegments.map((part, partIdx) => {
+            if (part.startsWith('*') && part.endsWith('*') && part.length > 1) {
+                return (
+                    <strong key={`${keyPrefix}-b-${segIdx}-${partIdx}`} className="font-extrabold text-slate-800">
+                        {part.slice(1, -1)}
+                    </strong>
+                );
+            }
+            return <span key={`${keyPrefix}-t-${segIdx}-${partIdx}`}>{part}</span>;
+        });
+    });
+}
+
+function renderAiFeedback(rawText) {
+    if (!rawText) return null;
+
+    const lines = rawText.split('\n');
+
+    return lines.map((line, idx) => {
+        if (line.trim() === '') {
+            return <div key={idx} className="h-2" />;
+        }
+
+        const isHeaderLine = /^[\p{Emoji_Presentation}\u2600-\u27BF]/u.test(line);
+        const isBullet = /^\*\s+/.test(line);
+        const isNoteLine = /^⚠️/.test(line);
+
+        const content = isBullet ? line.replace(/^\*\s+/, '') : line;
+        const parsed = parseInline(content, `line-${idx}`);
+
+        if (isBullet) {
+            return (
+                <div key={idx} className="flex items-start gap-2 pl-0.5">
+                    <span className="text-indigo-400 mt-0.5">•</span>
+                    <span className="text-xs text-slate-600 leading-relaxed">{parsed}</span>
+                </div>
+            );
+        }
+
+        if (isHeaderLine) {
+            return (
+                <p key={idx} className="text-sm font-black text-slate-800 leading-snug">
+                    {parsed}
+                </p>
+            );
+        }
+
+        if (isNoteLine) {
+            return (
+                <p key={idx} className="text-[11px] text-orange-600 font-semibold leading-relaxed bg-orange-50 border border-orange-100 rounded-lg px-2.5 py-2 mt-1">
+                    {parsed}
+                </p>
+            );
+        }
+
+        return (
+            <p key={idx} className="text-xs text-slate-600 leading-relaxed font-medium">
+                {parsed}
+            </p>
+        );
+    });
+}
+
 export default function EvaluationModal({ task, currentUser, onClose }) {
     const chatBottomRef = useRef(null);
     const chatForm      = useForm({ message: '' });
@@ -30,8 +117,6 @@ export default function EvaluationModal({ task, currentUser, onClose }) {
     return (
         <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/50 backdrop-blur-sm">
             <div className="bg-white rounded-t-3xl w-full max-w-md h-[88vh] flex flex-col shadow-2xl animate-slide-up">
-
-                {/* Header */}
                 <div className="px-6 pt-5 pb-4 border-b border-gray-100 shrink-0 relative">
                     <button
                         onClick={onClose}
@@ -56,10 +141,7 @@ export default function EvaluationModal({ task, currentUser, onClose }) {
                     </div>
                 </div>
 
-                {/* Body */}
                 <div className="flex-1 overflow-y-auto p-5 space-y-4 bg-white">
-
-                    {/* AI Feedback */}
                     <div className="bg-[#F0F6FF] border border-[#E2EEFF] rounded-2xl p-4">
                         <div className="flex items-center gap-2 mb-2.5">
                             <div className="w-6 h-6 rounded-full bg-indigo-600 flex items-center justify-center text-white text-[10px]">
@@ -69,17 +151,19 @@ export default function EvaluationModal({ task, currentUser, onClose }) {
                                 AI FEEDBACK
                             </h4>
                         </div>
-                        <p className="text-xs text-slate-600 leading-relaxed font-medium">
-                            {task.ai_feedback ?? 'Feedback sedang diproses...'}
-                        </p>
+                        <div className="space-y-1.5">
+                            {task.ai_feedback
+                                ? renderAiFeedback(task.ai_feedback)
+                                : <p className="text-xs text-slate-600 leading-relaxed font-medium">Feedback sedang diproses...</p>
+                            }
+                        </div>
                     </div>
 
-                    {/* Jawaban siswa */}
                     <div className="bg-gray-50 border border-gray-100 rounded-2xl p-3.5">
                         <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">
                             JAWABAN KAMU
                         </p>
-                        <p className="text-xs text-gray-700 font-medium">{task.student_answer}</p>
+                        <p className="text-xs text-gray-700 font-bold">{formatAsRupiah(task.student_answer)}</p>
                     </div>
 
                     {/* Chat thread */}
@@ -120,7 +204,6 @@ export default function EvaluationModal({ task, currentUser, onClose }) {
                     </div>
                 </div>
 
-                {/* Chat input */}
                 <form
                     onSubmit={handleSendMessage}
                     className="p-3 border-t border-gray-100 bg-white flex items-center gap-2 shrink-0"
