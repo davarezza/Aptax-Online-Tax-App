@@ -22,9 +22,9 @@ const links = [
         ),
     },
     {
-        key: 'spt',
+        key: 'spt-simulation',
         label: 'Simulasi SPT',
-        href: '/student/spt',
+        href: '/student/spt-simulation',
         isHighlight: true,
         icon: (className) => (
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className={className}>

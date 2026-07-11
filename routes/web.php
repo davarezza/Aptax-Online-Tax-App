@@ -5,10 +5,12 @@ use Inertia\Inertia;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Student\LeaderboardController;
 use App\Http\Controllers\Student\ModuleController;
+use App\Http\Controllers\Student\SPTSimulationController;
 use App\Http\Controllers\Student\TaskController;
 use App\Http\Controllers\StudentController;
 use App\Http\Controllers\Teacher\AnalyticController;
 use App\Http\Controllers\Teacher\MakerController;
+use App\Http\Controllers\Teacher\SPTMakerController;
 use App\Http\Controllers\Teacher\TeacherClassController;
 use App\Http\Controllers\TeacherController;
 
@@ -28,20 +30,28 @@ Route::middleware('auth')->group(function () {
 
 Route::middleware(['auth'])->prefix('student')->name('student.')->group(function () {
     Route::get('/home', [StudentController::class, 'home'])->name('home');
+
+    Route::get('/spt-simulation', [SPTSimulationController::class, 'index'])->name('spt-simulation');
+
     Route::get('/tasks', [TaskController::class, 'index'])->name('tasks');
     Route::post('/tasks/{taskId}/submit', [TaskController::class, 'submitAnswer'])->name('tasks.submit');
     Route::post('/tasks/chat/{submissionId}', [TaskController::class, 'storeChatFeedback'])->name('tasks.chat');
+    Route::post('/task/submit', [StudentController::class, 'submitTask'])->name('task.submit');
+
     Route::get('/modules', [ModuleController::class, 'index'])->name('modules');
     Route::get('/modules/{id}', [ModuleController::class, 'show'])->name('modules.show');
     Route::post('/modules/{id}/complete', [ModuleController::class, 'complete'])->name('modules.complete');
+
     Route::get('/leaderboard', [LeaderboardController::class, 'index'])->name('leaderboard');
 
-    Route::post('/task/submit', [StudentController::class, 'submitTask'])->name('task.submit');
 });
 
 
 Route::prefix('teacher')->name('teacher.')->group(function () {
     Route::get('/dashboard', [TeacherController::class, 'dashboard'])->name('dashboard');
+
+    Route::get('/spt-maker', [SPTMakerController::class, 'index'])
+        ->name('spt-maker');
 
     Route::get('/maker', [MakerController::class, 'index'])->name('maker');
     Route::post('/maker/generate-ai', [MakerController::class, 'generateAiCase'])->name('maker.generateAi');
