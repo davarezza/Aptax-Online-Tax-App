@@ -2,7 +2,7 @@ import AppLayout from '@/Components/AppLayout';
 import StudentHeader from '@/Components/Student/Header';
 import StudentBottomNav from '@/Components/Student/BottomNav';
 
-export default function StudentLeaderboard() {
+export default function SptSimulation() {
     return (
         <AppLayout>
             <StudentHeader />
