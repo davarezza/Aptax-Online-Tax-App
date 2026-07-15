@@ -9,13 +9,17 @@ class StoreSptAssignmentRequest extends FormRequest
     public function authorize(): bool
     {
         // Hanya guru yang login yang boleh membuat soal SPT.
-        return $this->user()?->role === 'teacher';
+        // Sesuai enum kolom users.role: admin | guru | siswa.
+        return $this->user()?->role === 'guru';
     }
 
     public function rules(): array
     {
         return [
-            'class_id'          => ['required', 'exists:classes,id'],
+            // NB: class_id sengaja TIDAK divalidasi di sini. Kelas ditentukan
+            // otomatis oleh controller dari relasi teacher_id, bukan dari
+            // input form, supaya guru tidak bisa membuat soal untuk kelas
+            // lain selain kelas yang ia ampu.
             'title'             => ['required', 'string', 'max:255'],
             'xp_reward'         => ['required', 'integer', 'min:10', 'max:1000'],
             'deadline'          => ['required', 'date', 'after:now'],
@@ -23,10 +27,17 @@ class StoreSptAssignmentRequest extends FormRequest
 
             // Data inti wizard
             'nama_wp'           => ['required', 'string', 'max:255'],
+            'pemberi_kerja'     => ['nullable', 'string', 'max:255'],
             'tahun_pajak'       => ['required', 'integer', 'digits:4', 'min:2020', 'max:' . (date('Y') + 1)],
             'penghasilan_neto'  => ['required', 'numeric', 'min:0'],
             'status_ptkp'       => ['required', 'string', 'in:TK/0,TK/1,TK/2,TK/3,K/0,K/1,K/2,K/3'],
             'kredit_pajak'      => ['nullable', 'numeric', 'min:0'],
+
+            // Penghasilan final (opsional, mis. bunga tabungan/dividen)
+            'punya_penghasilan_final'   => ['boolean'],
+            'sumber_penghasilan_final'  => ['required_if:punya_penghasilan_final,true', 'nullable', 'string', 'max:255'],
+            'penghasilan_final_bruto'   => ['required_if:punya_penghasilan_final,true', 'nullable', 'numeric', 'min:0'],
+            'penghasilan_final_pph'     => ['required_if:punya_penghasilan_final,true', 'nullable', 'numeric', 'min:0'],
 
             // Harta bergerak (opsional, banyak baris)
             'harta'                       => ['nullable', 'array'],

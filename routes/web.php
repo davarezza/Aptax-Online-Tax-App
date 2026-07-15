@@ -50,8 +50,12 @@ Route::middleware(['auth'])->prefix('student')->name('student.')->group(function
 Route::prefix('teacher')->name('teacher.')->group(function () {
     Route::get('/dashboard', [TeacherController::class, 'dashboard'])->name('dashboard');
 
-    Route::get('/spt-maker', [SPTMakerController::class, 'index'])
-        ->name('spt-maker');
+    Route::get('/spt-maker', [SPTMakerController::class, 'index'])->name('spt-maker.index');
+    Route::get('/spt-maker/create', [SPTMakerController::class, 'create'])->name('spt-maker.create');
+    Route::post('/spt-maker', [SPTMakerController::class, 'store'])->name('spt-maker.store');
+    Route::post('/spt-maker/preview', [SPTMakerController::class, 'preview'])->name('spt-maker.preview');
+    Route::patch('/spt-maker/{sptAssignment}/toggle-release', [SPTMakerController::class, 'toggleRelease'])->name('spt-maker.toggle-release');
+    Route::delete('/spt-maker/{sptAssignment}', [SPTMakerController::class, 'destroy'])->name('spt-maker.destroy');
 
     Route::get('/maker', [MakerController::class, 'index'])->name('maker');
     Route::post('/maker/generate-ai', [MakerController::class, 'generateAiCase'])->name('maker.generateAi');

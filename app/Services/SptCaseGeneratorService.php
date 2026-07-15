@@ -43,9 +43,14 @@ class SptCaseGeneratorService
      * @param  array{
      *     nama_wp: string,
      *     tahun_pajak: int,
+     *     pemberi_kerja?: string,
      *     penghasilan_neto: float,
      *     status_ptkp: string,
      *     kredit_pajak: float,
+     *     punya_penghasilan_final?: bool,
+     *     sumber_penghasilan_final?: string,
+     *     penghasilan_final_bruto?: float,
+     *     penghasilan_final_pph?: float,
      *     harta?: array<int, array{nama: string, tahun_perolehan?: int, harga_perolehan: float, keterangan?: string}>,
      *     utang?: array<int, array{nama_pemberi: string, tahun_pinjaman?: int, jumlah: float}>,
      * } $input
@@ -129,6 +134,16 @@ class SptCaseGeneratorService
 
             'J_utang' => $utang,
 
+            'informasi_tambahan' => [
+                'pemberi_kerja'      => $input['pemberi_kerja'] ?? null,
+                'penghasilan_final'  => ($input['punya_penghasilan_final'] ?? false) ? [
+                    'sumber' => $input['sumber_penghasilan_final'] ?? null,
+                    'bruto'  => (float) ($input['penghasilan_final_bruto'] ?? 0),
+                    'pph'    => (float) ($input['penghasilan_final_pph'] ?? 0),
+                ] : null,
+                'laporan_keuangan_diaudit' => false, // WP karyawan, bukan pelaku usaha besar
+            ],
+
             'K_pernyataan' => [
                 'catatan' => 'Data disusun otomatis oleh SPT Maker berdasarkan input guru. '
                     . 'Digunakan sebagai kasus simulasi bagi siswa, bukan dokumen resmi DJP.',
@@ -151,6 +166,97 @@ class SptCaseGeneratorService
             'selisih'      => $case['G_status_akhir']['selisih'],
             'status'       => $case['G_status_akhir']['status'],
         ];
+    }
+
+    /**
+     * Susun narasi studi kasus dari input wizard, gaya "cerita" seperti soal
+     * SPT resmi: instruksi pembuka, lalu bagian bernomor (Bukti Potong &
+     * Penghasilan, Informasi Finansial Tambahan, Daftar Harta Bergerak).
+     */
+    public function deskripsiSoal(array $input): string
+    {
+        $nama            = $input['nama_wp'] ?? 'Wajib Pajak';
+        $tahunPajak      = $input['tahun_pajak'] ?? now_year();
+        $pemberiKerja    = trim((string) ($input['pemberi_kerja'] ?? '')) ?: 'pemberi kerjanya';
+        $penghasilanNeto = (float) ($input['penghasilan_neto'] ?? 0);
+        $kreditPajak     = (float) ($input['kredit_pajak'] ?? 0);
+        $harta           = $input['harta'] ?? [];
+        $utang           = $input['utang'] ?? [];
+        $punyaFinal      = (bool) ($input['punya_penghasilan_final'] ?? false);
+
+        $paragraf = [];
+
+        $paragraf[] = "Berdasarkan data keuangan {$nama} di bawah ini, susunlah draf Laporan SPT Tahunan PPh "
+            . "Orang Pribadi menggunakan model SPT Normal (1770 S/SS) dengan alur pengisian dari Langkah 1 hingga "
+            . "Langkah K (Laporan Berhasil).";
+
+        $paragraf[] = "Data Keuangan & Transaksi (Tahun Pajak {$tahunPajak}):";
+
+        // ---- Bagian 1: Bukti Potong & Penghasilan ----
+        $bagian1 = [];
+        $bagian1[] = "1. Bukti Potong & Penghasilan (Bagian A, B, & C)";
+        $bagian1[] = "{$nama} memiliki Bukti Potong (Formulir 1721-A1) dari {$pemberiKerja} yang menunjukkan "
+            . "Penghasilan Neto Setahun sebesar " . formatRupiahService($penghasilanNeto) . ".";
+        $bagian1[] = "Tidak ada pengurang penghasilan neto lainnya.";
+        $bagian1[] = "Pemberi kerja telah memotong pajak (PPh Pasal 21) sebesar " . formatRupiahService($kreditPajak)
+            . " sepanjang tahun (Kredit Pajak Pihak Lain).";
+        $bagian1[] = "{$nama} tidak memiliki usaha sampingan/pekerjaan bebas, tidak memiliki penghasilan dalam "
+            . "negeri lainnya (seperti sewa/hadiah), dan tidak memiliki penghasilan dari luar negeri.";
+        $bagian1[] = "{$nama} tidak memiliki kewajiban membayar angsuran PPh Pasal 25 sendiri.";
+        $paragraf[] = implode("\n", $bagian1);
+
+        // ---- Bagian 2: Informasi Finansial Tambahan ----
+        $bagian2 = [];
+        $bagian2[] = "2. Informasi Finansial Tambahan (Bagian F & G)";
+
+        if ($punyaFinal) {
+            $sumberFinal = $input['sumber_penghasilan_final'] ?? 'penghasilan final';
+            $bruto       = (float) ($input['penghasilan_final_bruto'] ?? 0);
+            $pphFinal    = (float) ($input['penghasilan_final_pph'] ?? 0);
+            $bagian2[] = "Penghasilan Final: {$nama} menerima {$sumberFinal} sebesar " . formatRupiahService($bruto)
+                . " yang telah dipotong PPh Final sebesar " . formatRupiahService($pphFinal) . ".";
+        } else {
+            $bagian2[] = "{$nama} tidak memiliki penghasilan final yang perlu dilaporkan pada tahun pajak ini.";
+        }
+
+        if (count($utang) > 0) {
+            foreach ($utang as $u) {
+                $namaPemberi = $u['nama_pemberi'] ?? 'kreditur';
+                $jumlah      = (float) ($u['jumlah'] ?? 0);
+                $bagian2[] = "Utang: {$nama} memiliki sisa utang di {$namaPemberi} per 31 Desember sebesar "
+                    . formatRupiahService($jumlah) . ".";
+            }
+        } else {
+            $bagian2[] = "{$nama} tidak memiliki utang yang perlu dilaporkan pada tahun pajak ini.";
+        }
+
+        $bagian2[] = "Karena {$nama} adalah karyawan dan bukan pelaku usaha besar, laporan keuangannya tidak "
+            . "diaudit oleh akuntan publik.";
+        $paragraf[] = implode("\n", $bagian2);
+
+        // ---- Bagian 3: Daftar Harta Bergerak ----
+        $bagian3 = [];
+        $bagian3[] = "3. Daftar Harta Bergerak (Bagian I)";
+
+        if (count($harta) > 0) {
+            foreach ($harta as $h) {
+                $namaHarta = $h['nama'] ?? 'Harta';
+                $tahun     = $h['tahun_perolehan'] ?? '-';
+                $harga     = (float) ($h['harga_perolehan'] ?? 0);
+                $ket       = trim((string) ($h['keterangan'] ?? ''));
+                $baris = "Jenis Harta: {$namaHarta}, dibeli {$nama} pada tahun {$tahun} senilai "
+                    . formatRupiahService($harga) . ".";
+                if ($ket !== '') {
+                    $baris .= " ({$ket})";
+                }
+                $bagian3[] = $baris;
+            }
+        } else {
+            $bagian3[] = "{$nama} tidak melaporkan harta bergerak baru pada tahun pajak ini.";
+        }
+        $paragraf[] = implode("\n", $bagian3);
+
+        return implode("\n\n", $paragraf);
     }
 
     private function normalizePtkpStatus(string $status): string
@@ -228,5 +334,12 @@ if (!function_exists('now_year')) {
     function now_year(): int
     {
         return (int) date('Y');
+    }
+}
+
+if (!function_exists('formatRupiahService')) {
+    function formatRupiahService(float $value): string
+    {
+        return 'Rp' . number_format($value, 0, ',', '.');
     }
 }
