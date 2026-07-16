@@ -32,6 +32,10 @@ Route::middleware(['auth'])->prefix('student')->name('student.')->group(function
     Route::get('/home', [StudentController::class, 'home'])->name('home');
 
     Route::get('/spt-simulation', [SPTSimulationController::class, 'index'])->name('spt-simulation');
+    Route::post('/spt-simulation/{sptAssignment}/start', [SPTSimulationController::class, 'start'])->name('spt-simulation.start');
+    Route::get('/spt-simulation/{sptAssignment}/wizard', [SPTSimulationController::class, 'wizard'])->name('spt-simulation.wizard');
+    Route::post('/spt-simulation/{sptAssignment}/answer', [SPTSimulationController::class, 'answer'])->name('spt-simulation.answer');
+    Route::get('/spt-simulation/{sptAssignment}/bpe.pdf', [SPTSimulationController::class, 'downloadBpe'])->name('spt-simulation.bpe-pdf');
 
     Route::get('/tasks', [TaskController::class, 'index'])->name('tasks');
     Route::post('/tasks/{taskId}/submit', [TaskController::class, 'submitAnswer'])->name('tasks.submit');

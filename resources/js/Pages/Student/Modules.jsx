@@ -51,7 +51,6 @@ function ModuleCard({ id, title, description, progress, isLocked, pdfUrl, onClic
                     />
                 </div>
 
-                {/* Sisi Kanan: Berubah menjadi indikator status visual, bukan tombol terpisah */}
                 <div className="shrink-0">
                     {isLocked ? (
                         <div className="w-9 h-9 rounded-xl bg-gray-200 flex items-center justify-center text-gray-400">
