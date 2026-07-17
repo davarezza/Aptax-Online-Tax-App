@@ -89,10 +89,13 @@ export default function SptBank({ kelasAktif = null, assignments = [] }) {
                     {filtered.map((a) => {
                         const style = statusStyle[a.ringkasan?.status_akhir] ?? statusStyle['Nihil'];
                         return (
-                            <button
+                            <div
                                 key={a.id}
+                                role="button"
+                                tabIndex={0}
                                 onClick={() => setSelected(a)}
-                                className="w-full text-left bg-white border border-gray-100 rounded-2xl p-3.5 shadow-sm active:bg-gray-50"
+                                onKeyDown={(e) => { if (e.key === 'Enter') setSelected(a); }}
+                                className="w-full text-left bg-white border border-gray-100 rounded-2xl p-3.5 shadow-sm active:bg-gray-50 cursor-pointer"
                             >
                                 <div className="flex items-start justify-between gap-2 mb-1.5">
                                     <div className="flex items-center gap-1.5 flex-wrap">
@@ -101,25 +104,17 @@ export default function SptBank({ kelasAktif = null, assignments = [] }) {
                                             {a.ringkasan?.status_akhir ?? '-'}
                                         </span>
                                     </div>
-                                    <label
-                                        className="shrink-0 flex items-center"
-                                        onClick={(e) => e.stopPropagation()}
+                                    <button
+                                        type="button"
+                                        onClick={(e) => toggleRelease(a, e)}
+                                        className={`shrink-0 text-[10px] font-bold px-3 py-1.5 rounded-full ${
+                                            a.is_released
+                                                ? 'bg-[#1A6B3C] text-white'
+                                                : 'bg-gray-100 text-gray-500'
+                                        }`}
                                     >
-                                        <input
-                                            type="checkbox"
-                                            checked={a.is_released}
-                                            onChange={(e) => toggleRelease(a, e)}
-                                            className="sr-only peer"
-                                        />
-                                        <span
-                                            onClick={(e) => toggleRelease(a, e)}
-                                            className={`w-9 h-5 rounded-full flex items-center px-0.5 cursor-pointer transition-colors ${
-                                                a.is_released ? 'bg-[#1A6B3C] justify-end' : 'bg-gray-200 justify-start'
-                                            }`}
-                                        >
-                                            <span className="w-4 h-4 bg-white rounded-full shadow" />
-                                        </span>
-                                    </label>
+                                        {a.is_released ? '✓ Ditayangkan' : 'Rilis'}
+                                    </button>
                                 </div>
 
                                 <p className="text-sm font-bold text-gray-800 truncate">{a.title}</p>
@@ -138,15 +133,16 @@ export default function SptBank({ kelasAktif = null, assignments = [] }) {
                                     </div>
                                     <div className="flex items-center gap-2">
                                         <span className="text-[10px] font-semibold text-[#1A6B3C]">Lihat Detail</span>
-                                        <span
+                                        <button
+                                            type="button"
                                             onClick={(e) => handleDelete(a, e)}
                                             className="text-[10px] font-semibold text-red-400"
                                         >
                                             Hapus
-                                        </span>
+                                        </button>
                                     </div>
                                 </div>
-                            </button>
+                            </div>
                         );
                     })}
                 </div>
